@@ -12,6 +12,9 @@ import Profile from "./pages/Profile";
 import Messages from "./pages/Messages";
 import Search from "./pages/Search";
 import Notifications from "./pages/Notifications";
+import Explore from "./pages/Explore";
+import Reels from "./pages/Reels";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -21,8 +24,8 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-purple-600"></div>
+      <div className="min-h-screen flex items-center justify-center bg-background cyber-grid">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary animate-pulse-neon"></div>
       </div>
     );
   }
@@ -35,8 +38,8 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-purple-600"></div>
+      <div className="min-h-screen flex items-center justify-center bg-background cyber-grid">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary animate-pulse-neon"></div>
       </div>
     );
   }
@@ -74,6 +77,21 @@ const AppRoutes = () => (
     <Route path="/notifications" element={
       <ProtectedRoute>
         <Notifications />
+      </ProtectedRoute>
+    } />
+    <Route path="/explore" element={
+      <ProtectedRoute>
+        <Explore />
+      </ProtectedRoute>
+    } />
+    <Route path="/reels" element={
+      <ProtectedRoute>
+        <Reels />
+      </ProtectedRoute>
+    } />
+    <Route path="/settings" element={
+      <ProtectedRoute>
+        <Settings />
       </ProtectedRoute>
     } />
     <Route path="*" element={<NotFound />} />
