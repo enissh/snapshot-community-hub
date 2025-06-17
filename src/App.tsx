@@ -8,6 +8,10 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import Home from "./pages/Home";
 import Auth from "./pages/Auth";
+import Profile from "./pages/Profile";
+import Messages from "./pages/Messages";
+import Search from "./pages/Search";
+import Notifications from "./pages/Notifications";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -50,6 +54,26 @@ const AppRoutes = () => (
     <Route path="/" element={
       <ProtectedRoute>
         <Home />
+      </ProtectedRoute>
+    } />
+    <Route path="/profile/:userId?" element={
+      <ProtectedRoute>
+        <Profile />
+      </ProtectedRoute>
+    } />
+    <Route path="/messages" element={
+      <ProtectedRoute>
+        <Messages />
+      </ProtectedRoute>
+    } />
+    <Route path="/search" element={
+      <ProtectedRoute>
+        <Search />
+      </ProtectedRoute>
+    } />
+    <Route path="/notifications" element={
+      <ProtectedRoute>
+        <Notifications />
       </ProtectedRoute>
     } />
     <Route path="*" element={<NotFound />} />
