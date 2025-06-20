@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -97,13 +98,7 @@ const ChatWindow = ({ userId, onBack }: ChatWindowProps) => {
     }
 
     const channelName = `messages-${[currentUser.id, userId].sort().join('-')}`;
-    const channel = supabase.channel(channelName, {
-      config: {
-        presence: {
-          key: `chat:${channelName}`,
-        },
-      },
-    });
+    const channel = supabase.channel(channelName);
 
     channelRef.current = channel;
 
@@ -113,10 +108,7 @@ const ChatWindow = ({ userId, onBack }: ChatWindowProps) => {
         event: 'INSERT',
         schema: 'public',
         table: 'messages',
-        filter: `or(
-          and(sender_id.eq.${currentUser.id},recipient_id.eq.${userId}),
-          and(sender_id.eq.${userId},recipient_id.eq.${currentUser.id})
-        )`
+        filter: `or(and(sender_id.eq.${currentUser.id},recipient_id.eq.${userId}),and(sender_id.eq.${userId},recipient_id.eq.${currentUser.id}))`
       },
       (payload) => {
         const newMsg = payload.new as Message;
@@ -143,16 +135,6 @@ const ChatWindow = ({ userId, onBack }: ChatWindowProps) => {
         }
       }
     ).subscribe();
-
-    channel.on('presence', { event: 'sync' }, () => {
-      const state = channel.presenceState();
-      const otherUserTyping = Object.values(state).some(
-        (presence: any) =>
-          presence[0]?.user_id === userId &&
-          presence[0]?.typing === true
-      );
-      setTyping(otherUserTyping);
-    });
 
     return () => {
       supabase.removeChannel(channel);
@@ -224,9 +206,17 @@ const ChatWindow = ({ userId, onBack }: ChatWindowProps) => {
       return;
     }
 
-    // Real message to Supabase
+    // Add optimistic update for instant display
+    const tempMessage: Message = {
+      id: `temp-${Date.now()}`,
+      content: messageContent,
+      sender_id: currentUser.id,
+      created_at: new Date().toISOString()
+    };
+    setMessages(prev => [...prev, tempMessage]);
+
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('messages')
         .insert([
           {
@@ -234,12 +224,23 @@ const ChatWindow = ({ userId, onBack }: ChatWindowProps) => {
             sender_id: currentUser.id,
             recipient_id: userId,
           },
-        ]);
+        ])
+        .select()
+        .single();
 
       if (error) throw error;
+
+      // Replace temp message with real message
+      setMessages(prev => 
+        prev.map(msg => 
+          msg.id === tempMessage.id ? data : msg
+        )
+      );
     } catch (error) {
       console.error('Error sending message:', error);
       toast.error('Failed to send message');
+      // Remove temp message on error
+      setMessages(prev => prev.filter(msg => msg.id !== tempMessage.id));
     } finally {
       setSending(false);
     }
@@ -316,7 +317,7 @@ const ChatWindow = ({ userId, onBack }: ChatWindowProps) => {
 
   if (loading || !otherUser) {
     return (
-      <div className="h-full flex items-center justify-center cyber-card w-full">
+      <div className="h-screen flex items-center justify-center cyber-card w-full">
         <div className="text-center">
           <div className="loading-logo w-16 h-16 mx-auto mb-4"></div>
           <p className="text-muted-foreground">Loading conversation...</p>
@@ -326,14 +327,16 @@ const ChatWindow = ({ userId, onBack }: ChatWindowProps) => {
   }
 
   return (
-    <div className="h-full flex flex-col w-full bg-background max-w-md mx-auto relative">
+    <div className="h-screen flex flex-col w-full bg-background relative">
       <ChatHeader otherUser={otherUser} onBack={onBack} typing={typing} />
-      <MessagesList 
-        messages={messages} 
-        otherUser={otherUser} 
-        currentUser={currentUser}
-        ref={messagesEndRef}
-      />
+      <div className="flex-1 overflow-hidden">
+        <MessagesList 
+          messages={messages} 
+          otherUser={otherUser} 
+          currentUser={currentUser}
+          ref={messagesEndRef}
+        />
+      </div>
       <MessageInput 
         onSendMessage={sendMessage}
         onSendReaction={sendReaction}

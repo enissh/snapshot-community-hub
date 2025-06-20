@@ -66,137 +66,146 @@ const Messages = () => {
     setSearchQuery('');
   };
 
+  // Mobile layout when chat is selected
+  if (selectedUserId) {
+    return (
+      <div className="h-screen bg-background overflow-hidden">
+        <ChatWindow 
+          userId={selectedUserId} 
+          onBack={() => setSelectedUserId(null)}
+        />
+      </div>
+    );
+  }
+
+  // Desktop/tablet layout or mobile when no chat selected
   return (
     <div className="min-h-screen cyber-grid bg-background">
       <Header />
-      <div className="max-w-6xl mx-auto h-[calc(100vh-4rem)] flex cyber-card m-4 overflow-hidden">
-        {!selectedUserId ? (
-          <div className="w-full flex flex-col">
-            {/* Messages Header */}
-            <div className="p-6 border-b border-primary/20">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-2xl font-bold text-hologram">Messages</h2>
-                <Button className="neon-button">
-                  <MessageSquare className="h-4 w-4 mr-2" />
-                  New Chat
-                </Button>
-              </div>
-              
-              {/* Search */}
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                <Input
-                  placeholder="Search for users to message..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 cyber-card border-primary/20 text-foreground bg-background"
-                />
-              </div>
+      <div className="h-[calc(100vh-4rem)] flex cyber-card m-0 sm:m-4 sm:max-w-6xl sm:mx-auto overflow-hidden">
+        <div className="w-full flex flex-col">
+          {/* Messages Header */}
+          <div className="p-4 sm:p-6 border-b border-primary/20 bg-background">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl sm:text-2xl font-bold text-hologram">Messages</h2>
+              <Button className="neon-button text-sm sm:text-base">
+                <MessageSquare className="h-4 w-4 mr-2" />
+                New Chat
+              </Button>
             </div>
-
-            {/* Content */}
-            <div className="flex-1 overflow-y-auto">
-              {showUsersList ? (
-                /* Search Results */
-                <div className="p-4">
-                  <h3 className="text-lg font-semibold mb-4 text-foreground">Search Results</h3>
-                  {filteredUsers.length === 0 ? (
-                    <div className="text-center py-8">
-                      <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                      <p className="text-muted-foreground">No users found</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {filteredUsers.map((u) => (
-                        <div
-                          key={u.id}
-                          onClick={() => startChat(u.id)}
-                          className="flex items-center gap-3 p-3 hover:bg-primary/10 rounded-lg cursor-pointer transition-colors interactive-glow"
-                        >
-                          <div className="story-ring">
-                            <Avatar className="h-12 w-12">
-                              <AvatarImage src={u.avatar_url || ''} />
-                              <AvatarFallback className="bg-gradient-to-r from-primary to-accent text-white">
-                                {u.username.charAt(0).toUpperCase()}
-                              </AvatarFallback>
-                            </Avatar>
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2">
-                              <h3 className="font-semibold text-foreground">{u.username}</h3>
-                              {u.is_verified && <Crown className="h-4 w-4 text-accent" />}
-                            </div>
-                            {u.full_name && (
-                              <p className="text-sm text-muted-foreground">{u.full_name}</p>
-                            )}
-                          </div>
-                          <Button size="sm" className="neon-button">
-                            Message
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <>
-                  {/* AI Assistant */}
-                  <div className="p-4 border-b border-primary/20">
-                    <div 
-                      onClick={() => startChat('ai-assistant')}
-                      className="flex items-center gap-3 p-3 hover:bg-primary/10 rounded-lg cursor-pointer hologram"
-                    >
-                      <div className="w-12 h-12 bg-gradient-to-r from-primary to-accent rounded-full flex items-center justify-center">
-                        <Bot className="h-6 w-6 text-white" />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-foreground">PlazaGram AI Assistant</h3>
-                        <p className="text-sm text-muted-foreground">Get suggestions, captions, and more!</p>
-                      </div>
-                      <div className="achievement-badge w-6 h-6 flex items-center justify-center">
-                        <span className="text-xs">🤖</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Recent Chats */}
-                  <ConversationsList onSelectConversation={setSelectedUserId} />
-
-                  {/* Suggested People */}
-                  <div className="p-4">
-                    <h3 className="text-lg font-semibold mb-4 text-foreground">Suggested People</h3>
-                    <div className="grid grid-cols-2 gap-3">
-                      {allUsers.slice(0, 6).map((u) => (
-                        <div
-                          key={u.id}
-                          onClick={() => startChat(u.id)}
-                          className="cyber-card p-3 text-center cursor-pointer interactive-glow"
-                        >
-                          <div className="story-ring mx-auto mb-2 w-fit">
-                            <Avatar className="h-10 w-10">
-                              <AvatarImage src={u.avatar_url || ''} />
-                              <AvatarFallback className="bg-gradient-to-r from-primary to-accent text-white">
-                                {u.username.charAt(0).toUpperCase()}
-                              </AvatarFallback>
-                            </Avatar>
-                          </div>
-                          <p className="text-sm font-medium text-foreground truncate">{u.username}</p>
-                          {u.is_verified && <Crown className="h-3 w-3 text-accent mx-auto mt-1" />}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </>
-              )}
+            
+            {/* Search */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <Input
+                placeholder="Search for users to message..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 cyber-card border-primary/20 text-foreground bg-background text-base"
+              />
             </div>
           </div>
-        ) : (
-          <ChatWindow 
-            userId={selectedUserId} 
-            onBack={() => setSelectedUserId(null)}
-          />
-        )}
+
+          {/* Content */}
+          <div className="flex-1 overflow-y-auto bg-background">
+            {showUsersList ? (
+              /* Search Results */
+              <div className="p-4">
+                <h3 className="text-lg font-semibold mb-4 text-foreground">Search Results</h3>
+                {filteredUsers.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <p className="text-muted-foreground">No users found</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {filteredUsers.map((u) => (
+                      <div
+                        key={u.id}
+                        onClick={() => startChat(u.id)}
+                        className="flex items-center gap-3 p-3 hover:bg-primary/10 rounded-lg cursor-pointer transition-colors interactive-glow"
+                      >
+                        <div className="story-ring">
+                          <Avatar className="h-12 w-12">
+                            <AvatarImage src={u.avatar_url || ''} />
+                            <AvatarFallback className="bg-gradient-to-r from-primary to-accent text-white">
+                              {u.username.charAt(0).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-semibold text-foreground truncate">{u.username}</h3>
+                            {u.is_verified && <Crown className="h-4 w-4 text-accent flex-shrink-0" />}
+                          </div>
+                          {u.full_name && (
+                            <p className="text-sm text-muted-foreground truncate">{u.full_name}</p>
+                          )}
+                        </div>
+                        <Button size="sm" className="neon-button flex-shrink-0">
+                          Message
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <>
+                {/* AI Assistant */}
+                <div className="p-4 border-b border-primary/20 bg-background">
+                  <div 
+                    onClick={() => startChat('ai-assistant')}
+                    className="flex items-center gap-3 p-3 hover:bg-primary/10 rounded-lg cursor-pointer hologram transition-colors"
+                  >
+                    <div className="w-12 h-12 bg-gradient-to-r from-primary to-accent rounded-full flex items-center justify-center flex-shrink-0">
+                      <Bot className="h-6 w-6 text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-foreground">PlazaGram AI Assistant</h3>
+                      <p className="text-sm text-muted-foreground">Get suggestions, captions, and more!</p>
+                    </div>
+                    <div className="achievement-badge w-6 h-6 flex items-center justify-center flex-shrink-0">
+                      <span className="text-xs">🤖</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Recent Chats */}
+                <ConversationsList onSelectConversation={setSelectedUserId} />
+
+                {/* Suggested People */}
+                <div className="p-4 bg-background">
+                  <h3 className="text-lg font-semibold mb-4 text-foreground">Suggested People</h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    {allUsers.slice(0, 6).map((u) => (
+                      <div
+                        key={u.id}
+                        onClick={() => startChat(u.id)}
+                        className="cyber-card p-3 text-center cursor-pointer interactive-glow transition-colors"
+                      >
+                        <div className="story-ring mx-auto mb-2 w-fit">
+                          <Avatar className="h-10 w-10">
+                            <AvatarImage src={u.avatar_url || ''} />
+                            <AvatarFallback className="bg-gradient-to-r from-primary to-accent text-white">
+                              {u.username.charAt(0).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                        </div>
+                        <p className="text-sm font-medium text-foreground truncate">{u.username}</p>
+                        {u.is_verified && <Crown className="h-3 w-3 text-accent mx-auto mt-1" />}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
       </div>
+      
+      {/* Add bottom padding for mobile navigation */}
+      <div className="h-20 md:h-0"></div>
     </div>
   );
 };
