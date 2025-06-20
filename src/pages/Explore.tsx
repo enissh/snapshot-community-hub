@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Search, TrendingUp, Users, Hash, MapPin, Heart, MessageCircle, Play, ExternalLink, Clock, Star } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import Header from '@/components/Layout/Header';

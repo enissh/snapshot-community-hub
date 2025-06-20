@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -7,7 +6,8 @@ import MessagesList from '@/components/Messages/MessagesList';
 import ChatWindow from '@/components/Messages/ChatWindow';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Users, MessageSquare, Bot } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Search, Users, MessageSquare, Bot, Crown } from 'lucide-react';
 
 interface User {
   id: string;
