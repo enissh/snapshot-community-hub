@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, MapPin, CheckCircle } from 'lucide-react';
+import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, MapPin, CheckCircle, Crown, Zap } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -34,6 +34,7 @@ const PostCard = ({ post }: PostCardProps) => {
   const [saved, setSaved] = useState(false);
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
   const [liked, setLiked] = useState(false);
+  const [showLikeAnimation, setShowLikeAnimation] = useState(false);
 
   const isVideo = (url: string) => {
     return url.includes('.mp4') || url.includes('.mov') || url.includes('.webm');
@@ -54,6 +55,8 @@ const PostCard = ({ post }: PostCardProps) => {
   const handleDoubleClick = () => {
     if (!liked) {
       setLiked(true);
+      setShowLikeAnimation(true);
+      setTimeout(() => setShowLikeAnimation(false), 1000);
       toast("❤️ Liked!");
     }
   };
@@ -70,7 +73,7 @@ const PostCard = ({ post }: PostCardProps) => {
   };
 
   return (
-    <Card className="plaza-card w-full max-w-lg mx-auto mb-6 animate-fade-in">
+    <Card className="cyber-card w-full max-w-lg mx-auto mb-6 animate-fade-in overflow-hidden">
       {/* Post Header */}
       <div className="flex items-center justify-between p-4">
         <div className="flex items-center gap-3">
@@ -84,10 +87,11 @@ const PostCard = ({ post }: PostCardProps) => {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <p className="font-semibold text-foreground text-large">{post.profiles.username}</p>
+              <p className="font-semibold text-foreground">{post.profiles.username}</p>
               {post.profiles.is_verified && (
-                <CheckCircle className="h-4 w-4 text-primary" />
+                <Crown className="h-4 w-4 text-accent" />
               )}
+              <div className="online-dot" />
             </div>
             {post.profiles.full_name && (
               <p className="text-sm text-muted-foreground">{post.profiles.full_name}</p>
@@ -100,7 +104,7 @@ const PostCard = ({ post }: PostCardProps) => {
             )}
           </div>
         </div>
-        <Button variant="ghost" size="icon" className="hover:bg-primary/20">
+        <Button variant="ghost" size="icon" className="interactive-glow">
           <MoreHorizontal className="h-5 w-5" />
         </Button>
       </div>
@@ -135,7 +139,7 @@ const PostCard = ({ post }: PostCardProps) => {
           {isVideo(post.media_urls[currentMediaIndex]) ? (
             <video
               src={post.media_urls[currentMediaIndex]}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover cursor-pointer"
               controls
               loop
             />
@@ -161,9 +165,9 @@ const PostCard = ({ post }: PostCardProps) => {
           )}
 
           {/* Double-tap like animation */}
-          {liked && (
+          {showLikeAnimation && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <Heart className="h-20 w-20 text-primary post-liked" />
+              <Heart className="h-20 w-20 text-primary animate-pulse-neon fill-primary" />
             </div>
           )}
         </div>
@@ -175,14 +179,14 @@ const PostCard = ({ post }: PostCardProps) => {
             <Button 
               variant="ghost" 
               size="icon" 
-              className="post-like hover:bg-primary/20"
+              className="interactive-glow"
             >
               <MessageCircle className="h-6 w-6" />
             </Button>
             <Button 
               variant="ghost" 
               size="icon" 
-              className="post-like hover:bg-primary/20"
+              className="interactive-glow"
               onClick={handleShare}
             >
               <Send className="h-6 w-6" />
@@ -191,7 +195,7 @@ const PostCard = ({ post }: PostCardProps) => {
           <Button 
             variant="ghost" 
             size="icon" 
-            className="post-like hover:bg-primary/20"
+            className="interactive-glow"
             onClick={() => setSaved(!saved)}
           >
             <Bookmark className={`h-6 w-6 ${saved ? 'fill-primary text-primary' : ''}`} />
@@ -200,7 +204,8 @@ const PostCard = ({ post }: PostCardProps) => {
 
         {/* Like count */}
         <div className="px-4 pb-2">
-          <p className="font-semibold text-foreground text-large">
+          <p className="font-semibold text-foreground flex items-center gap-2">
+            <Heart className="h-4 w-4 text-primary" />
             {post.like_count} {post.like_count === 1 ? 'like' : 'likes'}
           </p>
         </div>
@@ -208,8 +213,8 @@ const PostCard = ({ post }: PostCardProps) => {
         {/* Caption */}
         {post.caption && (
           <div className="px-4 pb-2">
-            <p className="text-foreground text-readable">
-              <span className="font-semibold mr-2">{post.profiles.username}</span>
+            <p className="text-foreground">
+              <span className="font-semibold mr-2 text-hologram">{post.profiles.username}</span>
               {post.caption}
             </p>
           </div>
@@ -225,7 +230,8 @@ const PostCard = ({ post }: PostCardProps) => {
 
         {/* Timestamp */}
         <div className="px-4 pb-4">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground flex items-center gap-2">
+            <Zap className="h-3 w-3" />
             {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
           </p>
         </div>

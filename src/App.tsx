@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -18,6 +18,8 @@ import Settings from "./pages/Settings";
 import AdminPanel from "./pages/AdminPanel";
 import About from "./pages/About";
 import NotFound from "./pages/NotFound";
+import LoadingScreen from "./components/Layout/LoadingScreen";
+import ParticleBackground from "./components/Layout/ParticleBackground";
 
 const queryClient = new QueryClient();
 
@@ -25,17 +27,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
   
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background feed-grid">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-primary animate-pulse-orange mx-auto mb-4"></div>
-          <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-            PlazaGram
-          </h2>
-          <p className="text-muted-foreground">Loading...</p>
-        </div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
   
   return user ? <>{children}</> : <Navigate to="/auth" replace />;
@@ -45,78 +37,99 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
   
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background feed-grid">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-primary animate-pulse-orange mx-auto mb-4"></div>
-          <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-            PlazaGram
-          </h2>
-          <p className="text-muted-foreground">Loading...</p>
-        </div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
   
   return user ? <Navigate to="/" replace /> : <>{children}</>;
 };
 
-const AppRoutes = () => (
-  <Routes>
-    <Route path="/auth" element={
-      <PublicRoute>
-        <Auth />
-      </PublicRoute>
-    } />
-    <Route path="/" element={
-      <ProtectedRoute>
-        <Home />
-      </ProtectedRoute>
-    } />
-    <Route path="/profile/:userId?" element={
-      <ProtectedRoute>
-        <Profile />
-      </ProtectedRoute>
-    } />
-    <Route path="/messages" element={
-      <ProtectedRoute>
-        <Messages />
-      </ProtectedRoute>
-    } />
-    <Route path="/search" element={
-      <ProtectedRoute>
-        <Search />
-      </ProtectedRoute>
-    } />
-    <Route path="/notifications" element={
-      <ProtectedRoute>
-        <Notifications />
-      </ProtectedRoute>
-    } />
-    <Route path="/explore" element={
-      <ProtectedRoute>
-        <Explore />
-      </ProtectedRoute>
-    } />
-    <Route path="/reels" element={
-      <ProtectedRoute>
-        <Reels />
-      </ProtectedRoute>
-    } />
-    <Route path="/settings" element={
-      <ProtectedRoute>
-        <Settings />
-      </ProtectedRoute>
-    } />
-    <Route path="/admin" element={
-      <ProtectedRoute>
-        <AdminPanel />
-      </ProtectedRoute>
-    } />
-    <Route path="/about" element={<About />} />
-    <Route path="*" element={<NotFound />} />
-  </Routes>
-);
+const AppContent = () => {
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
+
+  return (
+    <>
+      <ParticleBackground />
+      <Routes>
+        <Route path="/auth" element={
+          <PublicRoute>
+            <Auth />
+          </PublicRoute>
+        } />
+        <Route path="/" element={
+          <ProtectedRoute>
+            <Home />
+          </ProtectedRoute>
+        } />
+        <Route path="/profile/:userId?" element={
+          <ProtectedRoute>
+            <Profile />
+          </ProtectedRoute>
+        } />
+        <Route path="/messages" element={
+          <ProtectedRoute>
+            <Messages />
+          </ProtectedRoute>
+        } />
+        <Route path="/search" element={
+          <ProtectedRoute>
+            <Search />
+          </ProtectedRoute>
+        } />
+        <Route path="/notifications" element={
+          <ProtectedRoute>
+            <Notifications />
+          </ProtectedRoute>
+        } />
+        <Route path="/explore" element={
+          <ProtectedRoute>
+            <Explore />
+          </ProtectedRoute>
+        } />
+        <Route path="/reels" element={
+          <ProtectedRoute>
+            <Reels />
+          </ProtectedRoute>
+        } />
+        <Route path="/settings" element={
+          <ProtectedRoute>
+            <Settings />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin" element={
+          <ProtectedRoute>
+            <AdminPanel />
+          </ProtectedRoute>
+        } />
+        <Route path="/about" element={<About />} />
+        <Route path="/easter-egg" element={
+          <div className="min-h-screen cyber-grid flex items-center justify-center">
+            <div className="cyber-card p-8 text-center max-w-md">
+              <h1 className="text-3xl mb-4">🔥 Easter Egg Found! 🔥</h1>
+              <p className="text-cyber mb-4">Only real ones find this.</p>
+              <p className="text-hologram text-xl font-bold">Respect from King Mbreti 👑</p>
+              <div className="mt-6 p-4 hologram rounded-lg">
+                <p className="text-sm">You've unlocked the hidden realm of PlazaGram!</p>
+              </div>
+            </div>
+          </div>
+        } />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </>
+  );
+};
 
 const App = () => {
   return (
@@ -126,7 +139,7 @@ const App = () => {
         <Sonner />
         <AuthProvider>
           <BrowserRouter>
-            <AppRoutes />
+            <AppContent />
           </BrowserRouter>
         </AuthProvider>
       </TooltipProvider>
