@@ -33,7 +33,6 @@ const PostCard = ({ post }: PostCardProps) => {
   const { user } = useAuth();
   const [saved, setSaved] = useState(false);
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
-  const [showComments, setShowComments] = useState(false);
   const [liked, setLiked] = useState(false);
 
   const isVideo = (url: string) => {
@@ -177,7 +176,6 @@ const PostCard = ({ post }: PostCardProps) => {
               variant="ghost" 
               size="icon" 
               className="post-like hover:bg-primary/20"
-              onClick={() => setShowComments(!showComments)}
             >
               <MessageCircle className="h-6 w-6" />
             </Button>
@@ -222,8 +220,6 @@ const PostCard = ({ post }: PostCardProps) => {
           <CommentSection 
             postId={post.id} 
             commentCount={post.comment_count}
-            showComments={showComments}
-            onToggle={() => setShowComments(!showComments)}
           />
         </div>
 

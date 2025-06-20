@@ -35,7 +35,7 @@ const Feed = ({ filter = 'all' }: FeedProps) => {
       if (filter === 'photos') {
         query = query.eq('media_type', 'photo');
       } else if (filter === 'videos') {
-        query = query.in('media_type', ['video', 'reel']);
+        query = query.eq('media_type', 'video');
       }
 
       const { data, error } = await query;
