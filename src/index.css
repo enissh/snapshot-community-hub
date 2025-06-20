@@ -40,7 +40,7 @@
     /* Futuristic Variables */
     --neon-glow: 0 0 20px rgba(255, 107, 53, 0.6);
     --cyber-glow: 0 0 30px rgba(255, 107, 53, 0.8);
-    --glass-bg: rgba(255, 255, 255, 0.05);
+    --glass-bg: rgba(0, 0, 0, 0.6);
     --glass-border: rgba(255, 107, 53, 0.2);
   }
 }
@@ -54,6 +54,7 @@
     @apply bg-background text-foreground;
     font-family: 'Inter', 'Orbitron', monospace;
     overflow-x: hidden;
+    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
   }
 
   /* Futuristic Scrollbar */
@@ -80,7 +81,7 @@
     border: 1px solid var(--glass-border);
     border-radius: 12px;
     box-shadow: 
-      0 8px 32px rgba(0, 0, 0, 0.3),
+      0 8px 32px rgba(0, 0, 0, 0.5),
       inset 0 1px 0 rgba(255, 255, 255, 0.1);
     transition: all 0.3s ease;
   }
@@ -88,8 +89,8 @@
   .cyber-card:hover {
     transform: translateY(-2px);
     box-shadow: 
-      0 12px 40px rgba(0, 0, 0, 0.4),
-      0 0 20px rgba(255, 107, 53, 0.3);
+      0 12px 40px rgba(0, 0, 0, 0.6),
+      0 0 20px rgba(255, 107, 53, 0.4);
   }
 
   /* Neon Button */
@@ -204,32 +205,7 @@
     backdrop-filter: blur(10px);
     border: 1px solid var(--glass-border);
     border-radius: 18px 18px 18px 4px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  }
-
-  /* Terminal Loading */
-  .terminal-loading {
-    font-family: 'Courier New', monospace;
-    color: #ff6b35;
-    text-shadow: 0 0 10px rgba(255, 107, 53, 0.8);
-  }
-
-  /* XP Bar */
-  .xp-bar {
-    background: rgba(255, 107, 53, 0.2);
-    border: 1px solid rgba(255, 107, 53, 0.4);
-    border-radius: 20px;
-    overflow: hidden;
-    height: 8px;
-    position: relative;
-  }
-
-  .xp-fill {
-    background: linear-gradient(90deg, #ff6b35, #ff8c42);
-    height: 100%;
-    border-radius: 20px;
-    box-shadow: 0 0 10px rgba(255, 107, 53, 0.6);
-    transition: width 0.5s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
   }
 
   /* Mobile Navigation */
@@ -237,7 +213,7 @@
     background: var(--glass-bg);
     backdrop-filter: blur(20px);
     border-top: 1px solid var(--glass-border);
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
   }
 
   /* Achievement Badge */
@@ -264,6 +240,46 @@
 
   .fab:hover {
     transform: scale(1.1) rotate(90deg);
+  }
+
+  /* Mobile optimizations */
+  @media (max-width: 768px) {
+    .cyber-card {
+      margin: 8px;
+      border-radius: 8px;
+    }
+    
+    .neon-button {
+      padding: 10px 16px;
+      font-size: 14px;
+    }
+
+    .mobile-nav {
+      padding: 12px 8px;
+    }
+
+    /* Touch-friendly buttons */
+    button {
+      min-height: 44px;
+      min-width: 44px;
+    }
+
+    /* Better text readability on mobile */
+    body {
+      font-size: 16px;
+      line-height: 1.5;
+    }
+  }
+
+  /* Online Status */
+  .online-dot {
+    width: 12px;
+    height: 12px;
+    background: #00ff88;
+    border-radius: 50%;
+    border: 2px solid var(--background);
+    box-shadow: 0 0 8px rgba(0, 255, 136, 0.6);
+    animation: pulse 2s infinite;
   }
 }
 
@@ -303,15 +319,15 @@
   50% { box-shadow: var(--cyber-glow); }
 }
 
-@keyframes matrix-rain {
-  0% { transform: translateY(-100%); opacity: 1; }
-  100% { transform: translateY(100vh); opacity: 0; }
+@keyframes pulse {
+  0% { box-shadow: 0 0 8px rgba(0, 255, 136, 0.6); }
+  50% { box-shadow: 0 0 15px rgba(0, 255, 136, 0.8); }
+  100% { box-shadow: 0 0 8px rgba(0, 255, 136, 0.6); }
 }
 
 .animate-fade-in { animation: fadeIn 0.5s ease-out; }
 .animate-slide-up { animation: slideUp 0.3s ease-out; }
 .animate-pulse-neon { animation: pulse-neon 2s ease-in-out infinite; }
-.animate-matrix { animation: matrix-rain 3s linear infinite; }
 
 /* Typography */
 h1 { @apply text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent; }
@@ -320,36 +336,11 @@ h3 { @apply text-2xl font-medium text-foreground; }
 .text-cyber { @apply text-lg font-mono text-primary; }
 .text-hologram { @apply text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary; }
 
-/* Mobile Optimizations */
-@media (max-width: 768px) {
-  body { font-size: 14px; }
-  h1 { @apply text-2xl; }
-  h2 { @apply text-xl; }
-  h3 { @apply text-lg; }
-  
-  .cyber-card {
-    border-radius: 8px;
-    margin: 8px;
-  }
-  
-  .neon-button {
-    padding: 10px 20px;
-    font-size: 14px;
-  }
-}
-
-/* Dark mode enhancements */
-.dark {
-  --background: 0 0% 3%;
-  --card: 220 15% 6%;
-  --secondary: 220 15% 8%;
-}
-
 /* Loading Screen */
 .loading-screen {
   position: fixed;
   inset: 0;
-  background: radial-gradient(circle at center, #0a0a0a 0%, #000000 100%);
+  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -358,8 +349,8 @@ h3 { @apply text-2xl font-medium text-foreground; }
 }
 
 .loading-logo {
-  width: 120px;
-  height: 120px;
+  width: 40px;
+  height: 40px;
   border: 3px solid transparent;
   border-radius: 50%;
   background: conic-gradient(from 0deg, #ff6b35, #ff8c42, #ffa726, #ff6b35);
@@ -371,49 +362,9 @@ h3 { @apply text-2xl font-medium text-foreground; }
 }
 
 .loading-logo:before {
-  content: '📸';
-  font-size: 48px;
-  filter: drop-shadow(0 0 10px rgba(255, 107, 53, 0.8));
-}
-
-/* Particle Background */
-.particles {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: -1;
-}
-
-.particle {
-  position: absolute;
-  width: 2px;
-  height: 2px;
-  background: rgba(255, 107, 53, 0.6);
+  content: '';
+  width: 80%;
+  height: 80%;
+  background: var(--background);
   border-radius: 50%;
-  animation: float 6s infinite ease-in-out;
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0; }
-  50% { transform: translateY(-100px) rotate(180deg); opacity: 1; }
-}
-
-/* Online Status */
-.online-dot {
-  width: 12px;
-  height: 12px;
-  background: #00ff88;
-  border-radius: 50%;
-  border: 2px solid var(--background);
-  box-shadow: 0 0 8px rgba(0, 255, 136, 0.6);
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0% { box-shadow: 0 0 8px rgba(0, 255, 136, 0.6); }
-  50% { box-shadow: 0 0 15px rgba(0, 255, 136, 0.8); }
-  100% { box-shadow: 0 0 8px rgba(0, 255, 136, 0.6); }
 }

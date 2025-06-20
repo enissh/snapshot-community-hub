@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -66,7 +67,7 @@ const Messages = () => {
   };
 
   return (
-    <div className="min-h-screen cyber-grid">
+    <div className="min-h-screen cyber-grid bg-background">
       <Header />
       <div className="max-w-6xl mx-auto h-[calc(100vh-4rem)] flex cyber-card m-4 overflow-hidden">
         {!selectedUserId ? (
@@ -88,7 +89,7 @@ const Messages = () => {
                   placeholder="Search for users to message..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 cyber-card border-primary/20 text-foreground"
+                  className="pl-10 cyber-card border-primary/20 text-foreground bg-background"
                 />
               </div>
             </div>

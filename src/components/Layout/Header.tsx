@@ -50,7 +50,7 @@ const Header = () => {
   return (
     <>
       {/* Desktop Header */}
-      <header className="cyber-card sticky top-0 z-50 border-b border-primary/20 backdrop-blur-md">
+      <header className="cyber-card sticky top-0 z-50 border-b border-primary/20 backdrop-blur-md bg-background/80">
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center gap-3 cursor-pointer interactive-glow" onClick={() => navigate('/')}>
@@ -71,7 +71,7 @@ const Header = () => {
                 placeholder="Search users, hashtags, locations..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 cyber-card border-primary/20 focus:border-primary text-foreground placeholder:text-muted-foreground"
+                className="pl-10 cyber-card border-primary/20 focus:border-primary text-foreground placeholder:text-muted-foreground bg-background"
               />
             </form>
           </div>
@@ -120,7 +120,7 @@ const Header = () => {
                   </div>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-52 cyber-card border-primary/20">
+              <DropdownMenuContent align="end" className="w-52 cyber-card border-primary/20 bg-background">
                 <DropdownMenuItem onClick={() => navigate('/profile')} className="hover:bg-primary/20">
                   <User className="h-4 w-4 mr-2" />
                   Profile

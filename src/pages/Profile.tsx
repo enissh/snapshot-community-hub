@@ -12,11 +12,21 @@ const Profile = () => {
   const profileUserId = userId || user?.id;
 
   if (!profileUserId) {
-    return <div>User not found</div>;
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="flex items-center justify-center py-20">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-foreground mb-2">User not found</h2>
+            <p className="text-muted-foreground">The profile you're looking for doesn't exist.</p>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <Header />
       <UserProfile userId={profileUserId} />
     </div>

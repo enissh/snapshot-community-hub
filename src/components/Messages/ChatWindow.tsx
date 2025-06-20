@@ -40,6 +40,7 @@ const ChatWindow = ({ userId, onBack }: ChatWindowProps) => {
   const [typing, setTyping] = useState(false);
   const [isAI, setIsAI] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const channelRef = useRef<any>(null);
 
   useEffect(() => {
     if (userId === 'ai-assistant') {
@@ -65,34 +66,60 @@ const ChatWindow = ({ userId, onBack }: ChatWindowProps) => {
 
     fetchOtherUser();
     fetchMessages();
+    setupRealtimeSubscription();
     
-    const channel = supabase
-      .channel('messages')
+    return () => {
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current);
+      }
+    };
+  }, [userId, currentUser]);
+
+  useEffect(() => {
+    scrollToBottomSmooth();
+  }, [messages]);
+
+  const scrollToBottomSmooth = () => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'end'
+      });
+    }
+  };
+
+  const setupRealtimeSubscription = () => {
+    if (!currentUser || isAI) return;
+
+    channelRef.current = supabase
+      .channel(`messages-${userId}-${currentUser.id}`)
       .on(
         'postgres_changes',
         {
           event: 'INSERT',
           schema: 'public',
           table: 'messages',
-          filter: `or(and(sender_id.eq.${currentUser?.id},recipient_id.eq.${userId}),and(sender_id.eq.${userId},recipient_id.eq.${currentUser?.id}))`
+          filter: `or(and(sender_id.eq.${currentUser.id},recipient_id.eq.${userId}),and(sender_id.eq.${userId},recipient_id.eq.${currentUser.id}))`
         },
         (payload) => {
-          setMessages(prev => [...prev, payload.new as Message]);
+          const newMsg = payload.new as Message;
+          setMessages(prev => {
+            // Check if message already exists to prevent duplicates
+            if (prev.some(msg => msg.id === newMsg.id)) {
+              return prev;
+            }
+            return [...prev, newMsg].sort((a, b) => 
+              new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+            );
+          });
+          
+          // Show notification for received messages
+          if (newMsg.sender_id !== currentUser.id) {
+            toast.success('New message received! 💬');
+          }
         }
       )
       .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [userId, currentUser]);
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   const fetchOtherUser = async () => {
@@ -164,7 +191,7 @@ const ChatWindow = ({ userId, onBack }: ChatWindowProps) => {
     setSending(true);
     
     if (isAI) {
-      // Add user message
+      // Add user message immediately
       const userMsg = {
         id: Date.now().toString(),
         content: newMessage.trim(),
@@ -187,6 +214,7 @@ const ChatWindow = ({ userId, onBack }: ChatWindowProps) => {
         };
         setMessages(prev => [...prev, aiResponse]);
         setTyping(false);
+        toast.success('AI response received! 🤖');
       }, 1500);
       
       setSending(false);
@@ -194,20 +222,43 @@ const ChatWindow = ({ userId, onBack }: ChatWindowProps) => {
     }
 
     try {
-      const { error } = await supabase
+      // Add message to local state immediately for instant feedback
+      const tempMessage: Message = {
+        id: `temp-${Date.now()}`,
+        content: newMessage.trim(),
+        sender_id: currentUser.id,
+        created_at: new Date().toISOString()
+      };
+
+      setMessages(prev => [...prev, tempMessage]);
+      const messageContent = newMessage.trim();
+      setNewMessage('');
+
+      // Send to database
+      const { data, error } = await supabase
         .from('messages')
         .insert({
           sender_id: currentUser.id,
           recipient_id: userId,
-          content: newMessage.trim()
-        });
+          content: messageContent
+        })
+        .select()
+        .single();
 
       if (error) throw error;
 
-      setNewMessage('');
+      // Replace temp message with real one
+      setMessages(prev => 
+        prev.map(msg => 
+          msg.id === tempMessage.id ? data : msg
+        )
+      );
+
       toast.success('Message sent! 💬');
     } catch (error) {
       console.error('Error sending message:', error);
+      // Remove temp message on error
+      setMessages(prev => prev.filter(msg => msg.id !== `temp-${Date.now()}`));
       toast.error('Failed to send message');
     } finally {
       setSending(false);
@@ -239,7 +290,7 @@ const ChatWindow = ({ userId, onBack }: ChatWindowProps) => {
     if (!currentUser) return;
 
     try {
-      const { error } = await supabase
+      await supabase
         .from('messages')
         .insert({
           sender_id: currentUser.id,
@@ -247,7 +298,6 @@ const ChatWindow = ({ userId, onBack }: ChatWindowProps) => {
           content: emoji
         });
 
-      if (error) throw error;
       toast.success('Reaction sent! 😊');
     } catch (error) {
       console.error('Error sending reaction:', error);
@@ -266,7 +316,7 @@ const ChatWindow = ({ userId, onBack }: ChatWindowProps) => {
   }
 
   return (
-    <div className="h-full flex flex-col w-full">
+    <div className="h-full flex flex-col w-full bg-background">
       {/* Chat Header */}
       <div className="p-4 border-b border-primary/20 flex items-center justify-between hologram">
         <div className="flex items-center gap-3">
@@ -409,8 +459,7 @@ const ChatWindow = ({ userId, onBack }: ChatWindowProps) => {
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
           className="flex-1 cyber-card border-primary/20 text-foreground placeholder:text-muted-foreground"
-          onFocus={() => setTyping(true)}
-          onBlur={() => setTyping(false)}
+          disabled={sending}
         />
         <Button variant="ghost" size="icon" className="interactive-glow">
           <Smile className="h-5 w-5" />
