@@ -1,6 +1,7 @@
+
 import { useState, useEffect } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Plus, Play } from 'lucide-react';
+import { Plus, Play, Crown } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import CreateStory from './CreateStory';
@@ -16,6 +17,7 @@ interface Story {
   profiles: {
     username: string;
     avatar_url: string | null;
+    is_verified: boolean;
   };
 }
 
@@ -41,7 +43,8 @@ const StoriesBar = () => {
         created_at,
         profiles:user_id (
           username,
-          avatar_url
+          avatar_url,
+          is_verified
         )
       `)
       .gt('expires_at', new Date().toISOString())
@@ -75,26 +78,22 @@ const StoriesBar = () => {
 
   return (
     <>
-      <div className="cyber-card p-4 mb-6 holographic">
-        <div className="flex gap-4 overflow-x-auto scrollbar-hide">
+      <div className="plaza-card p-6 mb-6 animate-fade-in">
+        <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-2">
           {/* Current user's story */}
-          <div className="flex flex-col items-center gap-2 min-w-0">
+          <div className="flex flex-col items-center gap-3 min-w-0">
             <div className="relative">
-              <div className={`p-1 rounded-full ${
-                userHasStory 
-                  ? 'bg-gradient-to-tr from-primary via-accent to-secondary animate-pulse-neon' 
-                  : 'bg-gradient-to-tr from-muted to-secondary'
-              }`}>
-                <Avatar className="h-16 w-16 border-2 border-background">
+              <div className={`story-ring ${userHasStory ? 'animate-pulse-orange' : ''}`}>
+                <Avatar className="h-20 w-20 border-3 border-background">
                   <AvatarImage src="" />
-                  <AvatarFallback className="bg-gradient-to-r from-primary to-accent text-white text-lg">
+                  <AvatarFallback className="bg-gradient-to-r from-primary to-accent text-white text-xl">
                     {user?.email?.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
               </div>
               <CreateStory onStoryCreated={fetchStories} />
             </div>
-            <span className="text-xs text-foreground text-center truncate w-18 font-medium">
+            <span className="text-sm text-foreground text-center truncate w-20 font-medium">
               Your story
             </span>
           </div>
@@ -105,25 +104,30 @@ const StoriesBar = () => {
             .map((story, index) => (
               <div 
                 key={story.id} 
-                className="flex flex-col items-center gap-2 min-w-0 cursor-pointer hover:scale-105 transition-transform"
+                className="flex flex-col items-center gap-3 min-w-0 cursor-pointer hover:scale-105 transition-transform"
                 onClick={() => openStoryViewer(index)}
               >
                 <div className="relative">
-                  <div className="p-1 rounded-full bg-gradient-to-tr from-primary via-accent to-secondary animate-pulse-neon">
-                    <Avatar className="h-16 w-16 border-2 border-background">
+                  <div className="story-ring animate-pulse-orange">
+                    <Avatar className="h-20 w-20 border-3 border-background">
                       <AvatarImage src={story.profiles.avatar_url || ''} />
-                      <AvatarFallback className="bg-gradient-to-r from-primary to-accent text-white text-lg">
+                      <AvatarFallback className="bg-gradient-to-r from-primary to-accent text-white text-xl">
                         {story.profiles.username.charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                   </div>
                   {story.media_type === 'video' && (
-                    <div className="absolute bottom-0 right-0 bg-primary rounded-full p-1">
+                    <div className="absolute bottom-1 right-1 bg-primary rounded-full p-1">
                       <Play className="h-3 w-3 text-white" />
                     </div>
                   )}
+                  {story.profiles.is_verified && (
+                    <div className="absolute -top-1 -right-1">
+                      <Crown className="h-4 w-4 text-accent" />
+                    </div>
+                  )}
                 </div>
-                <span className="text-xs text-foreground text-center truncate w-18 font-medium">
+                <span className="text-sm text-foreground text-center truncate w-20 font-medium">
                   {story.profiles.username}
                 </span>
               </div>

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Instagram, Heart } from 'lucide-react';
+import { Camera, Crown, Sparkles } from 'lucide-react';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -26,7 +26,7 @@ const Auth = () => {
         if (error) {
           toast.error(error.message);
         } else {
-          toast.success('Welcome back!');
+          toast.success('Welcome back to PlazaGram! 🎉');
         }
       } else {
         if (!username.trim()) {
@@ -38,7 +38,7 @@ const Auth = () => {
         if (error) {
           toast.error(error.message);
         } else {
-          toast.success('Account created successfully! Please check your email to verify your account.');
+          toast.success('Welcome to PlazaGram! Please check your email to verify your account. 📧');
         }
       }
     } catch (error) {
@@ -49,20 +49,30 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-500 via-pink-500 to-red-500 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4 feed-grid">
       <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center mb-4">
-            <Instagram className="h-12 w-12 text-white" />
+        <div className="text-center mb-8 animate-fade-in">
+          <div className="flex items-center justify-center mb-6">
+            <div className="relative">
+              <Camera className="h-16 w-16 text-primary animate-pulse-orange" />
+              <Crown className="h-6 w-6 text-accent absolute -top-2 -right-2" />
+            </div>
           </div>
-          <h1 className="text-4xl font-bold text-white mb-2">Snapgram</h1>
-          <p className="text-white/80">Share moments, connect with friends</p>
+          <h1 className="text-5xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-2">
+            PlazaGram
+          </h1>
+          <p className="text-foreground/80 text-lg flex items-center justify-center gap-2">
+            <Sparkles className="h-4 w-4 text-accent" />
+            The Future of Visual Sharing
+            <Sparkles className="h-4 w-4 text-accent" />
+          </p>
+          <p className="text-muted-foreground mt-2">Built with love by AI</p>
         </div>
 
-        <Card className="bg-white/95 backdrop-blur-sm shadow-2xl">
+        <Card className="plaza-card animate-slide-up">
           <CardHeader>
-            <CardTitle className="text-center text-2xl">
-              {isLogin ? 'Welcome back' : 'Join Snapgram'}
+            <CardTitle className="text-center text-2xl font-bold text-foreground">
+              {isLogin ? 'Welcome Back' : 'Join PlazaGram'}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -75,12 +85,14 @@ const Auth = () => {
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     required={!isLogin}
+                    className="bg-secondary/50 border-primary/20 text-foreground text-large"
                   />
                   <Input
                     type="text"
                     placeholder="Full Name"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
+                    className="bg-secondary/50 border-primary/20 text-foreground text-large"
                   />
                 </>
               )}
@@ -90,6 +102,7 @@ const Auth = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                className="bg-secondary/50 border-primary/20 text-foreground text-large"
               />
               <Input
                 type="password"
@@ -97,20 +110,21 @@ const Auth = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                className="bg-secondary/50 border-primary/20 text-foreground text-large"
               />
               <Button 
                 type="submit" 
-                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                className="w-full orange-button text-large"
                 disabled={loading}
               >
-                {loading ? 'Please wait...' : (isLogin ? 'Sign In' : 'Sign Up')}
+                {loading ? 'Please wait...' : (isLogin ? 'Sign In' : 'Create Account')}
               </Button>
             </form>
 
             <div className="mt-6 text-center">
               <button
                 onClick={() => setIsLogin(!isLogin)}
-                className="text-purple-600 hover:text-purple-800 font-medium"
+                className="text-primary hover:text-accent font-medium text-large transition-colors"
               >
                 {isLogin ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
               </button>
@@ -118,8 +132,11 @@ const Auth = () => {
           </CardContent>
         </Card>
 
-        <div className="text-center mt-6 text-white/60 text-sm flex items-center justify-center gap-1">
-          Made with <Heart className="h-4 w-4 text-red-400" /> for sharing moments
+        <div className="text-center mt-6 text-muted-foreground text-sm">
+          <p>Made by <span className="font-semibold text-primary">Enis Shabani (King Mbreti)</span> 👑</p>
+          <p className="mt-2">
+            <a href="/about" className="text-accent hover:text-primary transition-colors">About PlazaGram</a>
+          </p>
         </div>
       </div>
     </div>

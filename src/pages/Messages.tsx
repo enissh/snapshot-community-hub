@@ -8,9 +8,9 @@ const Messages = () => {
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background feed-grid">
       <Header />
-      <div className="max-w-4xl mx-auto h-[calc(100vh-4rem)] flex border border-gray-200 bg-white">
+      <div className="max-w-5xl mx-auto h-[calc(100vh-4rem)] flex border border-primary/20 plaza-card m-4">
         {!selectedUserId ? (
           <MessagesList onSelectConversation={setSelectedUserId} />
         ) : (

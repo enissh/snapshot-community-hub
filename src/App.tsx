@@ -15,6 +15,8 @@ import Notifications from "./pages/Notifications";
 import Explore from "./pages/Explore";
 import Reels from "./pages/Reels";
 import Settings from "./pages/Settings";
+import AdminPanel from "./pages/AdminPanel";
+import About from "./pages/About";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,8 +26,14 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background cyber-grid">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary animate-pulse-neon"></div>
+      <div className="min-h-screen flex items-center justify-center bg-background feed-grid">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-primary animate-pulse-orange mx-auto mb-4"></div>
+          <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            PlazaGram
+          </h2>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
       </div>
     );
   }
@@ -38,8 +46,14 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background cyber-grid">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary animate-pulse-neon"></div>
+      <div className="min-h-screen flex items-center justify-center bg-background feed-grid">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-primary animate-pulse-orange mx-auto mb-4"></div>
+          <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            PlazaGram
+          </h2>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
       </div>
     );
   }
@@ -94,6 +108,12 @@ const AppRoutes = () => (
         <Settings />
       </ProtectedRoute>
     } />
+    <Route path="/admin" element={
+      <ProtectedRoute>
+        <AdminPanel />
+      </ProtectedRoute>
+    } />
+    <Route path="/about" element={<About />} />
     <Route path="*" element={<NotFound />} />
   </Routes>
 );

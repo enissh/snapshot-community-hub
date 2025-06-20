@@ -10,14 +10,15 @@ import {
   Search, 
   Heart, 
   MessageCircle, 
-  Zap,
+  Camera,
   LogOut,
   User,
   Settings,
-  Bell,
   Compass,
   Video,
-  Camera
+  Plus,
+  Crown,
+  Shield
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -27,7 +28,6 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import CreatePost from '@/components/Post/CreatePost';
-import CreateStory from '@/components/Stories/CreateStory';
 
 const Header = () => {
   const { user, signOut } = useAuth();
@@ -46,15 +46,16 @@ const Header = () => {
   };
 
   return (
-    <header className="cyber-card sticky top-0 z-50 border-b border-primary/20">
+    <header className="plaza-card sticky top-0 z-50 border-b border-primary/10">
       <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
         {/* Logo */}
         <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
-          <div className="p-2 rounded-lg bg-gradient-to-r from-primary to-accent animate-pulse-neon">
-            <Zap className="h-6 w-6 text-white" />
+          <div className="relative">
+            <Camera className="h-8 w-8 text-primary animate-pulse-orange" />
+            <Crown className="h-4 w-4 text-accent absolute -top-1 -right-1" />
           </div>
           <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-            NeoSocial
+            PlazaGram
           </h1>
         </div>
 
@@ -63,10 +64,10 @@ const Header = () => {
           <form onSubmit={handleSearchSubmit} className="relative w-full">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
-              placeholder="Search users, posts, stories..."
+              placeholder="Search users, hashtags, locations..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 bg-secondary/50 border-primary/20 focus:border-primary text-foreground placeholder:text-muted-foreground"
+              className="pl-10 bg-secondary/50 border-primary/20 focus:border-primary text-foreground placeholder:text-muted-foreground text-large"
             />
           </form>
         </div>
@@ -89,7 +90,6 @@ const Header = () => {
             <Video className="h-5 w-5" />
           </Button>
           
-          <CreateStory />
           <CreatePost />
           
           <Button variant="ghost" size="icon" onClick={() => navigate('/notifications')} className="hover:bg-primary/20 hover:text-primary">
@@ -104,29 +104,31 @@ const Header = () => {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="rounded-full hover:bg-primary/20">
-                <Avatar className="h-8 w-8 border-2 border-primary/50">
-                  <AvatarImage src="" />
-                  <AvatarFallback className="bg-gradient-to-r from-primary to-accent text-white">
-                    {user?.email?.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
+                <div className="story-ring">
+                  <Avatar className="h-8 w-8 border-2 border-background">
+                    <AvatarImage src="" />
+                    <AvatarFallback className="bg-gradient-to-r from-primary to-accent text-white">
+                      {user?.email?.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                </div>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48 cyber-card border-primary/20">
-              <DropdownMenuItem onClick={() => navigate('/profile')} className="hover:bg-primary/20">
+            <DropdownMenuContent align="end" className="w-52 plaza-card border-primary/20">
+              <DropdownMenuItem onClick={() => navigate('/profile')} className="hover:bg-primary/20 text-large">
                 <User className="h-4 w-4 mr-2" />
                 Profile
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate('/saved')} className="hover:bg-primary/20">
-                <Heart className="h-4 w-4 mr-2" />
-                Saved
+              <DropdownMenuItem onClick={() => navigate('/admin')} className="hover:bg-primary/20 text-large">
+                <Shield className="h-4 w-4 mr-2" />
+                Admin Panel
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate('/settings')} className="hover:bg-primary/20">
+              <DropdownMenuItem onClick={() => navigate('/settings')} className="hover:bg-primary/20 text-large">
                 <Settings className="h-4 w-4 mr-2" />
                 Settings
               </DropdownMenuItem>
               <DropdownMenuSeparator className="bg-primary/20" />
-              <DropdownMenuItem onClick={handleSignOut} className="text-destructive hover:bg-destructive/20">
+              <DropdownMenuItem onClick={handleSignOut} className="text-destructive hover:bg-destructive/20 text-large">
                 <LogOut className="h-4 w-4 mr-2" />
                 Sign Out
               </DropdownMenuItem>
