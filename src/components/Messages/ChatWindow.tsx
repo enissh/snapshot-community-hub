@@ -1,21 +1,31 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Send, ArrowLeft, Phone, Video, Info, Heart, Image, Smile, MoreHorizontal, Bot, Zap, Crown } from 'lucide-react';
+import { 
+  Send, 
+  ArrowLeft,
+  Phone, 
+  Video, 
+  Info, 
+  Smile, 
+  MessageCircle,
+  Image as ImageIcon
+} from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 
-interface Message {
+// Types
+type Message = {
   id: string;
   content: string;
   sender_id: string;
   created_at: string;
   media_url?: string | null;
-}
+  reactions?: Record<string, string[]>;
+};
 
 interface Profile {
   id: string;
@@ -66,12 +76,13 @@ const ChatWindow = ({ userId, onBack }: ChatWindowProps) => {
 
     fetchOtherUser();
     fetchMessages();
-    setupRealtimeSubscription();
-    
+    const cleanup = setupRealtimeSubscription();
+
     return () => {
       if (channelRef.current) {
         supabase.removeChannel(channelRef.current);
       }
+      if (cleanup) cleanup();
     };
   }, [userId, currentUser]);
 
@@ -81,45 +92,89 @@ const ChatWindow = ({ userId, onBack }: ChatWindowProps) => {
 
   const scrollToBottomSmooth = () => {
     if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ 
-        behavior: 'smooth',
-        block: 'end'
-      });
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
     }
   };
 
   const setupRealtimeSubscription = () => {
     if (!currentUser || isAI) return;
 
-    channelRef.current = supabase
-      .channel(`messages-${userId}-${currentUser.id}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages',
-          filter: `or(and(sender_id.eq.${currentUser.id},recipient_id.eq.${userId}),and(sender_id.eq.${userId},recipient_id.eq.${currentUser.id}))`
+    if (channelRef.current) {
+      supabase.removeChannel(channelRef.current);
+    }
+
+    const channel = supabase.channel(`messages-${userId}-${currentUser.id}`, {
+      config: {
+        presence: {
+          key: `chat:${[currentUser.id, userId].sort().join('-')}`,
         },
-        (payload) => {
-          const newMsg = payload.new as Message;
-          setMessages(prev => {
-            // Check if message already exists to prevent duplicates
-            if (prev.some(msg => msg.id === newMsg.id)) {
-              return prev;
-            }
-            return [...prev, newMsg].sort((a, b) => 
-              new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-            );
-          });
-          
-          // Show notification for received messages
-          if (newMsg.sender_id !== currentUser.id) {
-            toast.success('New message received! 💬');
+      },
+    });
+
+    channelRef.current = channel;
+
+    channel.on(
+      'postgres_changes',
+      {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'messages',
+        filter: `or(
+          and(sender_id.eq.${currentUser.id},recipient_id.eq.${userId}),
+          and(sender_id.eq.${userId},recipient_id.eq.${currentUser.id})
+        )`
+      },
+      (payload) => {
+        const newMsg = payload.new as Message;
+        if (newMsg.id.startsWith('temp-')) return;
+
+        setMessages(prev => {
+          const messageExists = prev.some(msg =>
+            msg.id === newMsg.id ||
+            (msg.content === newMsg.content &&
+              msg.sender_id === newMsg.sender_id &&
+              Math.abs(new Date(msg.created_at).getTime() - new Date(newMsg.created_at).getTime()) < 1000)
+          );
+          if (messageExists) return prev;
+
+          return [...prev, newMsg].sort(
+            (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+          );
+        });
+
+        if (newMsg.sender_id !== currentUser.id) {
+          const isChatActive = document.visibilityState === 'visible' && document.hasFocus();
+
+          if (!isChatActive) {
+            toast.success(`New message from ${otherUser?.username || 'user'}`, {
+              description: newMsg.content.length > 30 ? `${newMsg.content.substring(0, 30)}...` : newMsg.content,
+              action: {
+                label: 'View',
+                onClick: () => window.focus(),
+              }
+            });
           }
         }
-      )
-      .subscribe();
+      }
+    ).subscribe(status => {
+      if (status === 'SUBSCRIBED') {
+        console.log('Realtime subscription active');
+      }
+    });
+
+    channel.on('presence', { event: 'sync' }, () => {
+      const state = channel.presenceState();
+      const otherUserTyping = Object.values(state).some(
+        (presence: any) =>
+          presence[0]?.user_id === userId &&
+          presence[0]?.typing === true
+      );
+      setTyping(otherUserTyping);
+    });
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   };
 
   const fetchOtherUser = async () => {
@@ -155,6 +210,116 @@ const ChatWindow = ({ userId, onBack }: ChatWindowProps) => {
     setLoading(false);
   };
 
+  const sendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newMessage.trim() || !currentUser || sending) return;
+
+    setSending(true);
+    const messageContent = newMessage.trim();
+    setNewMessage('');
+
+    if (isAI) {
+      // Show user message immediately
+      const userMsg: Message = {
+        id: `temp-${Date.now()}`,
+        content: messageContent,
+        sender_id: currentUser.id,
+        created_at: new Date().toISOString()
+      };
+      setMessages(prev => [...prev, userMsg]);
+
+      // Simulate AI typing and response
+      setTyping(true);
+      setTimeout(() => {
+        const aiResponse: Message = {
+          id: `ai-${Date.now()}`,
+          content: generateAIResponse(messageContent),
+          sender_id: 'ai-assistant',
+          created_at: new Date().toISOString()
+        };
+        setMessages(prev => [...prev, aiResponse]);
+        setTyping(false);
+        setSending(false);
+      }, 1500);
+
+      return;
+    }
+
+    // Not AI, send message to supabase
+    const tempId = `temp-${Date.now()}`;
+    const tempMessage: Message = {
+      id: tempId,
+      content: messageContent,
+      sender_id: currentUser.id,
+      created_at: new Date().toISOString()
+    };
+    setMessages(prev => [...prev, tempMessage]);
+
+    try {
+      const { data, error } = await supabase
+        .from('messages')
+        .insert([
+          {
+            content: messageContent,
+            sender_id: currentUser.id,
+            recipient_id: userId,
+          },
+        ])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setMessages(prev => prev.filter(msg => msg.id !== tempId));
+    } catch (error) {
+      console.error('Error sending message:', error);
+      toast.error('Failed to send message');
+      setMessages(prev => prev.filter(msg => msg.id !== tempId));
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const sendReaction = async (emoji: string) => {
+    if (isAI) {
+      const reactionMsg: Message = {
+        id: Date.now().toString(),
+        content: emoji,
+        sender_id: currentUser?.id || '',
+        created_at: new Date().toISOString()
+      };
+      setMessages(prev => [...prev, reactionMsg]);
+
+      setTimeout(() => {
+        const aiResponse: Message = {
+          id: (Date.now() + 1).toString(),
+          content: `${emoji} right back at you! What else can I help you with?`,
+          sender_id: 'ai-assistant',
+          created_at: new Date().toISOString()
+        };
+        setMessages(prev => [...prev, aiResponse]);
+      }, 1000);
+      return;
+    }
+
+    if (!currentUser) return;
+
+    try {
+      await supabase
+        .from('messages')
+        .insert({
+          sender_id: currentUser.id,
+          recipient_id: userId,
+          content: emoji
+        });
+
+      toast.success('Reaction sent! 😊');
+    } catch (error) {
+      console.error('Error sending reaction:', error);
+      toast.error('Failed to send reaction');
+    }
+  };
+
   const generateAIResponse = (userMessage: string) => {
     const responses = {
       caption: [
@@ -184,126 +349,6 @@ const ChatWindow = ({ userId, onBack }: ChatWindowProps) => {
     return "🤖 I'm here to help! Try asking me about:\n\n• Caption ideas\n• Hashtag suggestions\n• Growth tips\n• Content ideas\n\nWhat specific help do you need?";
   };
 
-  const sendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newMessage.trim() || !currentUser || sending) return;
-
-    setSending(true);
-    
-    if (isAI) {
-      // Add user message immediately
-      const userMsg = {
-        id: Date.now().toString(),
-        content: newMessage.trim(),
-        sender_id: currentUser.id,
-        created_at: new Date().toISOString()
-      };
-      setMessages(prev => [...prev, userMsg]);
-      
-      const userInput = newMessage.trim();
-      setNewMessage('');
-      
-      // Simulate AI thinking
-      setTyping(true);
-      setTimeout(() => {
-        const aiResponse = {
-          id: (Date.now() + 1).toString(),
-          content: generateAIResponse(userInput),
-          sender_id: 'ai-assistant',
-          created_at: new Date().toISOString()
-        };
-        setMessages(prev => [...prev, aiResponse]);
-        setTyping(false);
-        toast.success('AI response received! 🤖');
-      }, 1500);
-      
-      setSending(false);
-      return;
-    }
-
-    try {
-      // Add message to local state immediately for instant feedback
-      const tempMessage: Message = {
-        id: `temp-${Date.now()}`,
-        content: newMessage.trim(),
-        sender_id: currentUser.id,
-        created_at: new Date().toISOString()
-      };
-
-      setMessages(prev => [...prev, tempMessage]);
-      const messageContent = newMessage.trim();
-      setNewMessage('');
-
-      // Send to database
-      const { data, error } = await supabase
-        .from('messages')
-        .insert({
-          sender_id: currentUser.id,
-          recipient_id: userId,
-          content: messageContent
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      // Replace temp message with real one
-      setMessages(prev => 
-        prev.map(msg => 
-          msg.id === tempMessage.id ? data : msg
-        )
-      );
-
-      toast.success('Message sent! 💬');
-    } catch (error) {
-      console.error('Error sending message:', error);
-      // Remove temp message on error
-      setMessages(prev => prev.filter(msg => msg.id !== `temp-${Date.now()}`));
-      toast.error('Failed to send message');
-    } finally {
-      setSending(false);
-    }
-  };
-
-  const sendReaction = async (emoji: string) => {
-    if (isAI) {
-      const reactionMsg = {
-        id: Date.now().toString(),
-        content: emoji,
-        sender_id: currentUser?.id || '',
-        created_at: new Date().toISOString()
-      };
-      setMessages(prev => [...prev, reactionMsg]);
-      
-      setTimeout(() => {
-        const aiResponse = {
-          id: (Date.now() + 1).toString(),
-          content: `${emoji} right back at you! What else can I help you with?`,
-          sender_id: 'ai-assistant',
-          created_at: new Date().toISOString()
-        };
-        setMessages(prev => [...prev, aiResponse]);
-      }, 1000);
-      return;
-    }
-
-    if (!currentUser) return;
-
-    try {
-      await supabase
-        .from('messages')
-        .insert({
-          sender_id: currentUser.id,
-          recipient_id: userId,
-          content: emoji
-        });
-
-      toast.success('Reaction sent! 😊');
-    } catch (error) {
-      console.error('Error sending reaction:', error);
-    }
-  };
-
   if (loading || !otherUser) {
     return (
       <div className="h-full flex items-center justify-center cyber-card w-full">
@@ -316,113 +361,101 @@ const ChatWindow = ({ userId, onBack }: ChatWindowProps) => {
   }
 
   return (
-    <div className="h-full flex flex-col w-full bg-background">
+    <div className="h-full flex flex-col w-full bg-background max-w-md mx-auto">
       {/* Chat Header */}
       <div className="p-4 border-b border-primary/20 flex items-center justify-between hologram">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={onBack} className="interactive-glow md:hidden">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onBack}
+            className="text-muted-foreground hover:text-foreground"
+            aria-label="Back"
+          >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          
-          <div className="story-ring">
-            <Avatar className="h-12 w-12">
-              {isAI ? (
-                <div className="w-full h-full bg-gradient-to-r from-primary to-accent rounded-full flex items-center justify-center">
-                  <Bot className="h-6 w-6 text-white" />
-                </div>
-              ) : (
-                <>
-                  <AvatarImage src={otherUser.avatar_url || ''} />
-                  <AvatarFallback className="bg-gradient-to-r from-primary to-accent text-white">
-                    {otherUser.username.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </>
-              )}
-            </Avatar>
-          </div>
-          
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="font-semibold text-foreground">{otherUser.username}</h2>
-              {otherUser.is_verified && <Crown className="h-4 w-4 text-accent" />}
-              {isAI && <Zap className="h-4 w-4 text-primary" />}
-            </div>
-            {otherUser.full_name && (
-              <p className="text-sm text-muted-foreground">{otherUser.full_name}</p>
+          <Avatar className="h-10 w-10">
+            {otherUser.avatar_url ? (
+              <AvatarImage src={otherUser.avatar_url} alt={otherUser.username} />
+            ) : (
+              <AvatarFallback>{otherUser.username[0].toUpperCase()}</AvatarFallback>
             )}
-            {typing && <p className="text-xs text-primary animate-pulse">typing...</p>}
-            {!isAI && <div className="online-dot mt-1" />}
+          </Avatar>
+          <div className="flex flex-col min-w-0">
+            <p className="font-semibold truncate">{otherUser.username}</p>
+            <p className="text-xs text-muted-foreground truncate">
+              {typing ? 'typing...' : 'online'}
+            </p>
           </div>
         </div>
-
-        <div className="flex items-center gap-2">
-          {!isAI && (
-            <>
-              <Button variant="ghost" size="icon" className="interactive-glow">
-                <Phone className="h-5 w-5" />
-              </Button>
-              <Button variant="ghost" size="icon" className="interactive-glow">
-                <Video className="h-5 w-5" />
-              </Button>
-            </>
-          )}
-          <Button variant="ghost" size="icon" className="interactive-glow">
-            <Info className="h-5 w-5" />
+        <div className="hidden sm:flex items-center space-x-2">
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" aria-label="Call">
+            <Phone className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="icon" className="interactive-glow">
-            <MoreHorizontal className="h-5 w-5" />
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" aria-label="Video call">
+            <Video className="h-4 w-4" />
+          </Button>
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" aria-label="Info">
+            <Info className="h-4 w-4" />
           </Button>
         </div>
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-primary/50">
         {messages.length === 0 ? (
-          <div className="text-center py-12">
-            <Avatar className="h-20 w-20 mx-auto mb-4">
-              <AvatarImage src={otherUser.avatar_url || ''} />
-              <AvatarFallback className="bg-gradient-to-r from-primary to-accent text-white text-2xl">
-                {otherUser.username.charAt(0).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-            <h3 className="text-xl font-semibold text-foreground mb-2">
-              Start a conversation with {otherUser.username}
-            </h3>
-            <p className="text-muted-foreground">Say hello! 👋</p>
+          <div className="flex flex-col items-center justify-center h-full text-center p-6 sm:p-8">
+            <MessageCircle className="h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground/50 mb-3 sm:mb-4" />
+            <h3 className="text-base sm:text-lg font-medium mb-1">No messages yet</h3>
+            <p className="text-xs sm:text-sm text-muted-foreground max-w-md">
+              Start a conversation with {otherUser.username} by typing a message below.
+            </p>
           </div>
         ) : (
-          messages.map((message) => {
-            const isFromCurrentUser = message.sender_id === currentUser?.id;
-            const isFromAI = message.sender_id === 'ai-assistant';
-            
+          messages.map(msg => {
+            const isMine = msg.sender_id === currentUser?.id;
             return (
               <div
-                key={message.id}
-                className={`flex ${isFromCurrentUser ? 'justify-end' : 'justify-start'} animate-fade-in`}
+                key={msg.id}
+                className={`flex items-end ${isMine ? 'justify-end' : 'justify-start'}`}
               >
+                {!isMine && (
+                  <Avatar className="h-8 w-8 sm:h-10 sm:w-10 mr-2 flex-shrink-0">
+                    {otherUser.avatar_url ? (
+                      <AvatarImage src={otherUser.avatar_url} alt={otherUser.username} />
+                    ) : (
+                      <AvatarFallback>{otherUser.username[0].toUpperCase()}</AvatarFallback>
+                    )}
+                  </Avatar>
+                )}
+
                 <div
-                  className={`max-w-xs lg:max-w-md px-4 py-3 ${
-                    isFromCurrentUser
-                      ? 'message-sent text-white'
-                      : isFromAI
-                      ? 'hologram text-foreground border border-primary/30'
-                      : 'message-received text-foreground'
+                  className={`relative px-4 py-2 rounded-xl break-words max-w-[85%] sm:max-w-[75%] md:max-w-[65%] lg:max-w-[55%] ${
+                    isMine ? 'bg-primary text-primary-foreground rounded-br-none' : 'bg-muted text-foreground rounded-bl-none'
                   }`}
                 >
-                  {message.media_url && (
+                  {msg.media_url && (
                     <img
-                      src={message.media_url}
-                      alt="Message media"
-                      className="w-full rounded-lg mb-2"
+                      src={msg.media_url}
+                      alt="Media"
+                      className="rounded-lg mb-2 max-h-60 w-auto object-cover"
                     />
                   )}
-                  <p className="break-words whitespace-pre-line">{message.content}</p>
-                  <p className={`text-xs mt-2 ${
-                    isFromCurrentUser ? 'text-white/70' : 'text-muted-foreground'
-                  }`}>
-                    {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
-                  </p>
+                  <p className="whitespace-pre-wrap">{msg.content}</p>
+                  <span className="absolute bottom-0 right-1 text-[10px] opacity-50 select-none">
+                    {formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}
+                  </span>
                 </div>
+
+                {isMine && (
+                  <Avatar className="h-8 w-8 sm:h-10 sm:w-10 ml-2 flex-shrink-0">
+                    {currentUser?.user_metadata?.avatar_url ? (
+                      <AvatarImage src={currentUser.user_metadata.avatar_url} alt="You" />
+                    ) : (
+                      <AvatarFallback>{currentUser?.email?.[0].toUpperCase() || 'Y'}</AvatarFallback>
+                    )}
+                  </Avatar>
+                )}
               </div>
             );
           })
@@ -430,47 +463,37 @@ const ChatWindow = ({ userId, onBack }: ChatWindowProps) => {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Quick reactions */}
-      <div className="px-4 py-2 border-t border-primary/10">
-        <div className="flex gap-2 justify-center overflow-x-auto">
-          {['❤️', '😂', '😮', '😢', '😍', '👍', '🔥', '💯', '🚀', '⭐'].map((emoji) => (
-            <Button
-              key={emoji}
-              variant="ghost"
-              size="sm"
-              onClick={() => sendReaction(emoji)}
-              className="interactive-glow text-xl flex-shrink-0"
-            >
-              {emoji}
-            </Button>
-          ))}
-        </div>
-      </div>
-
-      {/* Message Input */}
-      <form onSubmit={sendMessage} className="p-4 border-t border-primary/20 flex gap-2">
-        {!isAI && (
-          <Button variant="ghost" size="icon" className="interactive-glow">
-            <Image className="h-5 w-5" />
-          </Button>
-        )}
-        <Input
-          placeholder={isAI ? "Ask me anything..." : `Message ${otherUser.username}...`}
-          value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
-          className="flex-1 cyber-card border-primary/20 text-foreground placeholder:text-muted-foreground"
-          disabled={sending}
-        />
-        <Button variant="ghost" size="icon" className="interactive-glow">
-          <Smile className="h-5 w-5" />
-        </Button>
-        <Button 
-          type="submit" 
-          disabled={sending || !newMessage.trim()}
-          size="icon"
-          className="neon-button"
+      {/* Input area */}
+      <form
+        onSubmit={sendMessage}
+        className="p-3 sm:p-4 border-t border-primary/20 flex items-center gap-2 bg-background"
+      >
+        <Button
+          variant="ghost"
+          type="button"
+          onClick={() => sendReaction('😊')}
+          className="text-muted-foreground hover:text-foreground"
+          aria-label="Send smile reaction"
         >
-          <Send className="h-4 w-4" />
+          <Smile className="h-6 w-6" />
+        </Button>
+        <Input
+          type="text"
+          placeholder="Type your message..."
+          value={newMessage}
+          onChange={e => setNewMessage(e.target.value)}
+          disabled={sending}
+          className="flex-1 rounded-full py-2 px-4 bg-muted focus:bg-muted/80 placeholder:text-muted-foreground"
+          autoComplete="off"
+          aria-label="Message input"
+        />
+        <Button
+          type="submit"
+          disabled={sending || !newMessage.trim()}
+          aria-label="Send message"
+          className="rounded-full p-2 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <Send className="h-5 w-5" />
         </Button>
       </form>
     </div>
