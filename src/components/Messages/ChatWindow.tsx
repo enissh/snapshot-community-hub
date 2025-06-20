@@ -1,21 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { 
-  Send, 
-  ArrowLeft,
-  Phone, 
-  Video, 
-  Info, 
-  Smile, 
-  MessageCircle,
-  Image as ImageIcon
-} from 'lucide-react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
-import { formatDistanceToNow } from 'date-fns';
+import ChatHeader from './ChatHeader';
+import MessagesList from './MessagesList';
+import MessageInput from './MessageInput';
 
 // Types
 type Message = {
@@ -43,7 +32,6 @@ interface ChatWindowProps {
 const ChatWindow = ({ userId, onBack }: ChatWindowProps) => {
   const { user: currentUser } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
-  const [newMessage, setNewMessage] = useState('');
   const [otherUser, setOtherUser] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
@@ -51,6 +39,16 @@ const ChatWindow = ({ userId, onBack }: ChatWindowProps) => {
   const [isAI, setIsAI] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const channelRef = useRef<any>(null);
+
+  const scrollToBottom = useCallback(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'end',
+        inline: 'nearest'
+      });
+    }
+  }, []);
 
   useEffect(() => {
     if (userId === 'ai-assistant') {
@@ -87,14 +85,9 @@ const ChatWindow = ({ userId, onBack }: ChatWindowProps) => {
   }, [userId, currentUser]);
 
   useEffect(() => {
-    scrollToBottomSmooth();
-  }, [messages]);
-
-  const scrollToBottomSmooth = () => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
-    }
-  };
+    const timer = setTimeout(scrollToBottom, 100);
+    return () => clearTimeout(timer);
+  }, [messages, scrollToBottom]);
 
   const setupRealtimeSubscription = () => {
     if (!currentUser || isAI) return;
@@ -103,10 +96,11 @@ const ChatWindow = ({ userId, onBack }: ChatWindowProps) => {
       supabase.removeChannel(channelRef.current);
     }
 
-    const channel = supabase.channel(`messages-${userId}-${currentUser.id}`, {
+    const channelName = `messages-${[currentUser.id, userId].sort().join('-')}`;
+    const channel = supabase.channel(channelName, {
       config: {
         presence: {
-          key: `chat:${[currentUser.id, userId].sort().join('-')}`,
+          key: `chat:${channelName}`,
         },
       },
     });
@@ -126,20 +120,16 @@ const ChatWindow = ({ userId, onBack }: ChatWindowProps) => {
       },
       (payload) => {
         const newMsg = payload.new as Message;
-        if (newMsg.id.startsWith('temp-')) return;
-
+        
         setMessages(prev => {
-          const messageExists = prev.some(msg =>
-            msg.id === newMsg.id ||
-            (msg.content === newMsg.content &&
-              msg.sender_id === newMsg.sender_id &&
-              Math.abs(new Date(msg.created_at).getTime() - new Date(newMsg.created_at).getTime()) < 1000)
-          );
+          const messageExists = prev.some(msg => msg.id === newMsg.id);
           if (messageExists) return prev;
 
-          return [...prev, newMsg].sort(
+          const updatedMessages = [...prev, newMsg].sort(
             (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
           );
+          
+          return updatedMessages;
         });
 
         if (newMsg.sender_id !== currentUser.id) {
@@ -148,19 +138,11 @@ const ChatWindow = ({ userId, onBack }: ChatWindowProps) => {
           if (!isChatActive) {
             toast.success(`New message from ${otherUser?.username || 'user'}`, {
               description: newMsg.content.length > 30 ? `${newMsg.content.substring(0, 30)}...` : newMsg.content,
-              action: {
-                label: 'View',
-                onClick: () => window.focus(),
-              }
             });
           }
         }
       }
-    ).subscribe(status => {
-      if (status === 'SUBSCRIBED') {
-        console.log('Realtime subscription active');
-      }
-    });
+    ).subscribe();
 
     channel.on('presence', { event: 'sync' }, () => {
       const state = channel.presenceState();
@@ -210,18 +192,15 @@ const ChatWindow = ({ userId, onBack }: ChatWindowProps) => {
     setLoading(false);
   };
 
-  const sendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newMessage.trim() || !currentUser || sending) return;
+  const sendMessage = async (messageContent: string) => {
+    if (!currentUser || sending) return;
 
     setSending(true);
-    const messageContent = newMessage.trim();
-    setNewMessage('');
 
     if (isAI) {
       // Show user message immediately
       const userMsg: Message = {
-        id: `temp-${Date.now()}`,
+        id: `temp-user-${Date.now()}`,
         content: messageContent,
         sender_id: currentUser.id,
         created_at: new Date().toISOString()
@@ -245,18 +224,9 @@ const ChatWindow = ({ userId, onBack }: ChatWindowProps) => {
       return;
     }
 
-    // Not AI, send message to supabase
-    const tempId = `temp-${Date.now()}`;
-    const tempMessage: Message = {
-      id: tempId,
-      content: messageContent,
-      sender_id: currentUser.id,
-      created_at: new Date().toISOString()
-    };
-    setMessages(prev => [...prev, tempMessage]);
-
+    // Real message to Supabase
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('messages')
         .insert([
           {
@@ -264,17 +234,12 @@ const ChatWindow = ({ userId, onBack }: ChatWindowProps) => {
             sender_id: currentUser.id,
             recipient_id: userId,
           },
-        ])
-        .select()
-        .single();
+        ]);
 
       if (error) throw error;
-
-      setMessages(prev => prev.filter(msg => msg.id !== tempId));
     } catch (error) {
       console.error('Error sending message:', error);
       toast.error('Failed to send message');
-      setMessages(prev => prev.filter(msg => msg.id !== tempId));
     } finally {
       setSending(false);
     }
@@ -283,7 +248,7 @@ const ChatWindow = ({ userId, onBack }: ChatWindowProps) => {
   const sendReaction = async (emoji: string) => {
     if (isAI) {
       const reactionMsg: Message = {
-        id: Date.now().toString(),
+        id: `temp-reaction-${Date.now()}`,
         content: emoji,
         sender_id: currentUser?.id || '',
         created_at: new Date().toISOString()
@@ -292,7 +257,7 @@ const ChatWindow = ({ userId, onBack }: ChatWindowProps) => {
 
       setTimeout(() => {
         const aiResponse: Message = {
-          id: (Date.now() + 1).toString(),
+          id: `ai-response-${Date.now()}`,
           content: `${emoji} right back at you! What else can I help you with?`,
           sender_id: 'ai-assistant',
           created_at: new Date().toISOString()
@@ -361,141 +326,19 @@ const ChatWindow = ({ userId, onBack }: ChatWindowProps) => {
   }
 
   return (
-    <div className="h-full flex flex-col w-full bg-background max-w-md mx-auto">
-      {/* Chat Header */}
-      <div className="p-4 border-b border-primary/20 flex items-center justify-between hologram">
-        <div className="flex items-center gap-3">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onBack}
-            className="text-muted-foreground hover:text-foreground"
-            aria-label="Back"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <Avatar className="h-10 w-10">
-            {otherUser.avatar_url ? (
-              <AvatarImage src={otherUser.avatar_url} alt={otherUser.username} />
-            ) : (
-              <AvatarFallback>{otherUser.username[0].toUpperCase()}</AvatarFallback>
-            )}
-          </Avatar>
-          <div className="flex flex-col min-w-0">
-            <p className="font-semibold truncate">{otherUser.username}</p>
-            <p className="text-xs text-muted-foreground truncate">
-              {typing ? 'typing...' : 'online'}
-            </p>
-          </div>
-        </div>
-        <div className="hidden sm:flex items-center space-x-2">
-          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" aria-label="Call">
-            <Phone className="h-4 w-4" />
-          </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" aria-label="Video call">
-            <Video className="h-4 w-4" />
-          </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" aria-label="Info">
-            <Info className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
-
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-primary/50">
-        {messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-center p-6 sm:p-8">
-            <MessageCircle className="h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground/50 mb-3 sm:mb-4" />
-            <h3 className="text-base sm:text-lg font-medium mb-1">No messages yet</h3>
-            <p className="text-xs sm:text-sm text-muted-foreground max-w-md">
-              Start a conversation with {otherUser.username} by typing a message below.
-            </p>
-          </div>
-        ) : (
-          messages.map(msg => {
-            const isMine = msg.sender_id === currentUser?.id;
-            return (
-              <div
-                key={msg.id}
-                className={`flex items-end ${isMine ? 'justify-end' : 'justify-start'}`}
-              >
-                {!isMine && (
-                  <Avatar className="h-8 w-8 sm:h-10 sm:w-10 mr-2 flex-shrink-0">
-                    {otherUser.avatar_url ? (
-                      <AvatarImage src={otherUser.avatar_url} alt={otherUser.username} />
-                    ) : (
-                      <AvatarFallback>{otherUser.username[0].toUpperCase()}</AvatarFallback>
-                    )}
-                  </Avatar>
-                )}
-
-                <div
-                  className={`relative px-4 py-2 rounded-xl break-words max-w-[85%] sm:max-w-[75%] md:max-w-[65%] lg:max-w-[55%] ${
-                    isMine ? 'bg-primary text-primary-foreground rounded-br-none' : 'bg-muted text-foreground rounded-bl-none'
-                  }`}
-                >
-                  {msg.media_url && (
-                    <img
-                      src={msg.media_url}
-                      alt="Media"
-                      className="rounded-lg mb-2 max-h-60 w-auto object-cover"
-                    />
-                  )}
-                  <p className="whitespace-pre-wrap">{msg.content}</p>
-                  <span className="absolute bottom-0 right-1 text-[10px] opacity-50 select-none">
-                    {formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}
-                  </span>
-                </div>
-
-                {isMine && (
-                  <Avatar className="h-8 w-8 sm:h-10 sm:w-10 ml-2 flex-shrink-0">
-                    {currentUser?.user_metadata?.avatar_url ? (
-                      <AvatarImage src={currentUser.user_metadata.avatar_url} alt="You" />
-                    ) : (
-                      <AvatarFallback>{currentUser?.email?.[0].toUpperCase() || 'Y'}</AvatarFallback>
-                    )}
-                  </Avatar>
-                )}
-              </div>
-            );
-          })
-        )}
-        <div ref={messagesEndRef} />
-      </div>
-
-      {/* Input area */}
-      <form
-        onSubmit={sendMessage}
-        className="p-3 sm:p-4 border-t border-primary/20 flex items-center gap-2 bg-background"
-      >
-        <Button
-          variant="ghost"
-          type="button"
-          onClick={() => sendReaction('😊')}
-          className="text-muted-foreground hover:text-foreground"
-          aria-label="Send smile reaction"
-        >
-          <Smile className="h-6 w-6" />
-        </Button>
-        <Input
-          type="text"
-          placeholder="Type your message..."
-          value={newMessage}
-          onChange={e => setNewMessage(e.target.value)}
-          disabled={sending}
-          className="flex-1 rounded-full py-2 px-4 bg-muted focus:bg-muted/80 placeholder:text-muted-foreground"
-          autoComplete="off"
-          aria-label="Message input"
-        />
-        <Button
-          type="submit"
-          disabled={sending || !newMessage.trim()}
-          aria-label="Send message"
-          className="rounded-full p-2 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <Send className="h-5 w-5" />
-        </Button>
-      </form>
+    <div className="h-full flex flex-col w-full bg-background max-w-md mx-auto relative">
+      <ChatHeader otherUser={otherUser} onBack={onBack} typing={typing} />
+      <MessagesList 
+        messages={messages} 
+        otherUser={otherUser} 
+        currentUser={currentUser}
+        ref={messagesEndRef}
+      />
+      <MessageInput 
+        onSendMessage={sendMessage}
+        onSendReaction={sendReaction}
+        sending={sending}
+      />
     </div>
   );
 };
