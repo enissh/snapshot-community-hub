@@ -21,20 +21,20 @@ interface Profile {
 }
 
 interface MessagesListProps {
-  messages: Message[];
-  otherUser: Profile;
+  messages?: Message[];
+  otherUser?: Profile;
   currentUser: any;
 }
 
 const MessagesList = forwardRef<HTMLDivElement, MessagesListProps>(
-  ({ messages, otherUser, currentUser }, ref) => {
-    if (messages.length === 0) {
+  ({ messages = [], otherUser, currentUser }, ref) => {
+    if (!messages || messages.length === 0) {
       return (
         <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
           <MessageCircle className="h-16 w-16 text-muted-foreground/30 mb-4" />
           <h3 className="text-lg font-medium mb-2 text-foreground">No messages yet</h3>
           <p className="text-sm text-muted-foreground max-w-sm">
-            Start a conversation with {otherUser.username} by typing a message below.
+            {otherUser ? `Start a conversation with ${otherUser.username} by typing a message below.` : 'Select a conversation to start messaging.'}
           </p>
         </div>
       );

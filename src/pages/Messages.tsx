@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import Header from '@/components/Layout/Header';
-import MessagesList from '@/components/Messages/MessagesList';
+import ConversationsList from '@/components/Messages/ConversationsList';
 import ChatWindow from '@/components/Messages/ChatWindow';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -160,7 +160,7 @@ const Messages = () => {
                   </div>
 
                   {/* Recent Chats */}
-                  <MessagesList onSelectConversation={setSelectedUserId} />
+                  <ConversationsList onSelectConversation={setSelectedUserId} />
 
                   {/* Suggested People */}
                   <div className="p-4">
