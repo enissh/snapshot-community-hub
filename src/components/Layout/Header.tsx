@@ -16,10 +16,7 @@ import {
   Settings,
   Compass,
   Video,
-  Plus,
-  Crown,
-  Shield,
-  Star
+  Plus
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -28,7 +25,6 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
-import CreatePost from '@/components/Post/CreatePost';
 
 const Header = () => {
   const { user, signOut } = useAuth();
@@ -49,15 +45,15 @@ const Header = () => {
   return (
     <>
       {/* Desktop Header */}
-      <header className="plazoid-glass sticky top-0 z-50 border-b border-primary/20 backdrop-blur-md">
+      <header className="glass-effect sticky top-0 z-50 border-b border-white/10">
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
           {/* Logo */}
-          <div className="flex items-center gap-3 cursor-pointer interactive-glow" onClick={() => navigate('/')}>
+          <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
             <div className="relative">
-              <Zap className="h-8 w-8 text-primary animate-pulse-neon" />
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-secondary to-accent rounded-full animate-pulse" />
+              <Zap className="h-8 w-8 text-indigo-400" />
+              <div className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-indigo-400 to-purple-600 rounded-full animate-pulse" />
             </div>
-            <h1 className="text-2xl font-bold text-hologram font-['Orbitron']">
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-400 to-purple-600 bg-clip-text text-transparent">
               Plazoid
             </h1>
           </div>
@@ -65,79 +61,67 @@ const Header = () => {
           {/* Search Bar - Hidden on mobile */}
           <div className="hidden md:flex flex-1 max-w-md mx-8">
             <form onSubmit={handleSearchSubmit} className="relative w-full">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
-                placeholder="Search the future..."
+                placeholder="Search..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 plazoid-card border-primary/20 focus:border-primary text-foreground placeholder:text-muted-foreground bg-background/50 rounded-full"
+                className="modern-input pl-10"
               />
             </form>
           </div>
 
           {/* Navigation Icons */}
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/')} className="interactive-glow hover:text-primary rounded-full">
+            <Button variant="ghost" size="icon" onClick={() => navigate('/')} className="hover:bg-white/10 rounded-full">
               <Home className="h-5 w-5" />
             </Button>
             
-            <Button variant="ghost" size="icon" onClick={() => navigate('/explore')} className="interactive-glow hover:text-primary rounded-full">
+            <Button variant="ghost" size="icon" onClick={() => navigate('/explore')} className="hover:bg-white/10 rounded-full">
               <Compass className="h-5 w-5" />
             </Button>
             
-            <Button variant="ghost" size="icon" onClick={() => navigate('/search')} className="sm:hidden interactive-glow hover:text-primary rounded-full">
+            <Button variant="ghost" size="icon" onClick={() => navigate('/search')} className="sm:hidden hover:bg-white/10 rounded-full">
               <Search className="h-5 w-5" />
             </Button>
             
-            <Button variant="ghost" size="icon" onClick={() => navigate('/reels')} className="interactive-glow hover:text-primary rounded-full">
+            <Button variant="ghost" size="icon" onClick={() => navigate('/reels')} className="hover:bg-white/10 rounded-full">
               <Video className="h-5 w-5" />
             </Button>
             
-            <CreatePost />
-            
-            <Button variant="ghost" size="icon" onClick={() => navigate('/notifications')} className="interactive-glow hover:text-primary relative rounded-full">
+            <Button variant="ghost" size="icon" onClick={() => navigate('/notifications')} className="hover:bg-white/10 relative rounded-full">
               <Heart className="h-5 w-5" />
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-accent rounded-full animate-pulse" />
+              <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse" />
             </Button>
             
-            <Button variant="ghost" size="icon" onClick={() => navigate('/messages')} className="interactive-glow hover:text-primary relative rounded-full">
+            <Button variant="ghost" size="icon" onClick={() => navigate('/messages')} className="hover:bg-white/10 relative rounded-full">
               <MessageCircle className="h-5 w-5" />
-              <div className="online-dot absolute -top-1 -right-1" />
+              <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full" />
             </Button>
 
             {/* Profile Menu */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full interactive-glow">
-                  <div className="story-ring">
-                    <Avatar className="h-8 w-8 border-2 border-background">
-                      <AvatarImage src="" />
-                      <AvatarFallback className="bg-gradient-to-r from-primary to-secondary text-white font-['Orbitron']">
-                        {user?.email?.charAt(0).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                  </div>
+                <Button variant="ghost" size="icon" className="rounded-full">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src="" />
+                    <AvatarFallback className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white">
+                      {user?.email?.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-52 plazoid-card border-primary/20 bg-background">
-                <DropdownMenuItem onClick={() => navigate('/profile')} className="hover:bg-primary/20 cursor-pointer">
+              <DropdownMenuContent align="end" className="modern-card">
+                <DropdownMenuItem onClick={() => navigate('/profile')} className="hover:bg-white/10 cursor-pointer">
                   <User className="h-4 w-4 mr-2" />
                   Profile
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate('/admin')} className="hover:bg-primary/20 cursor-pointer">
-                  <Shield className="h-4 w-4 mr-2" />
-                  Admin Panel
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate('/settings')} className="hover:bg-primary/20 cursor-pointer">
+                <DropdownMenuItem onClick={() => navigate('/settings')} className="hover:bg-white/10 cursor-pointer">
                   <Settings className="h-4 w-4 mr-2" />
                   Settings
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate('/easter-egg')} className="hover:bg-primary/20 cursor-pointer">
-                  <Star className="h-4 w-4 mr-2" />
-                  Secret
-                </DropdownMenuItem>
-                <DropdownMenuSeparator className="bg-primary/20" />
-                <DropdownMenuItem onClick={handleSignOut} className="text-destructive hover:bg-destructive/20 cursor-pointer">
+                <DropdownMenuSeparator className="bg-white/10" />
+                <DropdownMenuItem onClick={handleSignOut} className="text-red-400 hover:bg-red-500/20 cursor-pointer">
                   <LogOut className="h-4 w-4 mr-2" />
                   Sign Out
                 </DropdownMenuItem>
@@ -148,36 +132,34 @@ const Header = () => {
       </header>
 
       {/* Mobile Bottom Navigation */}
-      <div className="mobile-nav fixed bottom-0 left-0 right-0 md:hidden z-50">
+      <div className="glass-effect fixed bottom-0 left-0 right-0 md:hidden z-50 border-t border-white/10">
         <div className="flex justify-around items-center h-16 px-2">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/')} className="interactive-glow rounded-full">
+          <Button variant="ghost" size="icon" onClick={() => navigate('/')} className="rounded-full">
             <Home className="h-6 w-6" />
           </Button>
-          <Button variant="ghost" size="icon" onClick={() => navigate('/search')} className="interactive-glow rounded-full">
+          <Button variant="ghost" size="icon" onClick={() => navigate('/search')} className="rounded-full">
             <Search className="h-6 w-6" />
           </Button>
-          <Button variant="ghost" size="icon" onClick={() => navigate('/reels')} className="interactive-glow rounded-full">
+          <Button variant="ghost" size="icon" onClick={() => navigate('/reels')} className="rounded-full">
             <Video className="h-6 w-6" />
           </Button>
-          <Button variant="ghost" size="icon" onClick={() => navigate('/notifications')} className="interactive-glow relative rounded-full">
+          <Button variant="ghost" size="icon" onClick={() => navigate('/notifications')} className="relative rounded-full">
             <Heart className="h-6 w-6" />
-            <div className="absolute -top-1 -right-1 w-2 h-2 bg-accent rounded-full" />
+            <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full" />
           </Button>
-          <Button variant="ghost" size="icon" onClick={() => navigate('/profile')} className="interactive-glow rounded-full">
-            <div className="story-ring">
-              <Avatar className="h-7 w-7">
-                <AvatarImage src="" />
-                <AvatarFallback className="bg-gradient-to-r from-primary to-secondary text-white text-xs font-['Orbitron']">
-                  {user?.email?.charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-            </div>
+          <Button variant="ghost" size="icon" onClick={() => navigate('/profile')} className="rounded-full">
+            <Avatar className="h-7 w-7">
+              <AvatarImage src="" />
+              <AvatarFallback className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-xs">
+                {user?.email?.charAt(0).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
           </Button>
         </div>
       </div>
 
       {/* Floating Action Button - Mobile */}
-      <Button className="fab md:hidden neon-button" onClick={() => navigate('/create')}>
+      <Button className="btn-primary fixed bottom-20 right-4 md:hidden rounded-full w-14 h-14 shadow-lg" onClick={() => navigate('/create')}>
         <Plus className="h-6 w-6" />
       </Button>
     </>

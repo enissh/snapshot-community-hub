@@ -1,7 +1,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ArrowLeft, Phone, Video, Info } from 'lucide-react';
+import { ArrowLeft, Phone, Video, MoreVertical } from 'lucide-react';
 
 interface Profile {
   id: string;
@@ -12,49 +12,74 @@ interface Profile {
 }
 
 interface ChatHeaderProps {
-  otherUser: Profile;
+  otherUser: Profile | null;
   onBack: () => void;
   typing: boolean;
 }
 
 const ChatHeader = ({ otherUser, onBack, typing }: ChatHeaderProps) => {
+  if (!otherUser) {
+    return (
+      <div className="chat-header p-4 flex items-center gap-3">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onBack}
+          className="text-gray-400 hover:text-white"
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
+        <div className="loading-spinner"></div>
+      </div>
+    );
+  }
+
   return (
-    <div className="sticky top-0 z-10 p-3 sm:p-4 border-b border-primary/20 flex items-center justify-between bg-background/95 backdrop-blur-md">
+    <div className="chat-header p-4 flex items-center justify-between">
       <div className="flex items-center gap-3 flex-1 min-w-0">
         <Button
           variant="ghost"
           size="icon"
           onClick={onBack}
-          className="text-muted-foreground hover:text-foreground flex-shrink-0"
-          aria-label="Back"
+          className="text-gray-400 hover:text-white flex-shrink-0"
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
+        
         <Avatar className="h-10 w-10 flex-shrink-0">
           {otherUser.avatar_url ? (
             <AvatarImage src={otherUser.avatar_url} alt={otherUser.username} />
           ) : (
-            <AvatarFallback className="bg-gradient-to-r from-primary to-accent text-white">
-              {otherUser.username[0].toUpperCase()}
+            <AvatarFallback className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white">
+              {otherUser.username[0]?.toUpperCase() || '?'}
             </AvatarFallback>
           )}
         </Avatar>
+        
         <div className="flex flex-col min-w-0 flex-1">
-          <p className="font-semibold truncate text-foreground">{otherUser.username}</p>
-          <p className="text-xs text-muted-foreground truncate">
+          <div className="flex items-center gap-2">
+            <h3 className="font-semibold truncate text-white">{otherUser.username}</h3>
+            {otherUser.is_verified && (
+              <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+                <span className="text-white text-xs">✓</span>
+              </div>
+            )}
+          </div>
+          <p className="text-xs text-gray-400 truncate">
             {typing ? 'typing...' : 'online'}
           </p>
         </div>
       </div>
-      <div className="hidden sm:flex items-center space-x-1 flex-shrink-0">
-        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" aria-label="Call">
+      
+      <div className="hidden sm:flex items-center gap-1 flex-shrink-0">
+        <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white">
           <Phone className="h-4 w-4" />
         </Button>
-        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" aria-label="Video call">
+        <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white">
           <Video className="h-4 w-4" />
         </Button>
-        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" aria-label="Info">
-          <Info className="h-4 w-4" />
+        <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white">
+          <MoreVertical className="h-4 w-4" />
         </Button>
       </div>
     </div>

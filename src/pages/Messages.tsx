@@ -8,7 +8,7 @@ import ChatWindow from '@/components/Messages/ChatWindow';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Search, Users, MessageSquare, Zap, Crown, Hash } from 'lucide-react';
+import { Search, Users, MessageSquare, Hash, Bot } from 'lucide-react';
 
 interface User {
   id: string;
@@ -22,23 +22,23 @@ const colorRooms = [
   {
     id: 'neon-lounge',
     name: 'Neon Lounge',
-    description: 'Electric conversations in purple & cyan',
-    gradient: 'from-purple-500 to-cyan-400',
+    description: 'Electric conversations',
+    color: 'from-indigo-500 to-purple-600',
     icon: '💜'
   },
   {
     id: 'crimson-chat',
-    name: 'Crimson Chat',
-    description: 'Hot discussions in red & magenta',
-    gradient: 'from-red-500 to-pink-500',
+    name: 'Crimson Chat', 
+    description: 'Hot discussions',
+    color: 'from-red-500 to-pink-500',
     icon: '❤️'
   },
   {
-    id: 'aura-club',
-    name: 'Aura Club',
-    description: 'Mystical vibes in lime & electric',
-    gradient: 'from-lime-400 to-cyan-300',
-    icon: '✨'
+    id: 'cyber-space',
+    name: 'Cyber Space',
+    description: 'Future vibes',
+    color: 'from-cyan-500 to-blue-500', 
+    icon: '🚀'
   }
 ];
 
@@ -49,6 +49,7 @@ const Messages = () => {
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [showUsersList, setShowUsersList] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchAllUsers();
@@ -70,18 +71,24 @@ const Messages = () => {
   const fetchAllUsers = async () => {
     if (!user) return;
 
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('id, username, avatar_url, full_name, is_verified')
-      .neq('id', user.id)
-      .limit(50);
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, username, avatar_url, full_name, is_verified')
+        .neq('id', user.id)
+        .limit(50);
 
-    if (error) {
-      console.error('Error fetching users:', error);
-      return;
+      if (error) {
+        console.error('Error fetching users:', error);
+        return;
+      }
+
+      setAllUsers(data || []);
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setLoading(false);
     }
-
-    setAllUsers(data || []);
   };
 
   const startChat = (userId: string) => {
@@ -93,166 +100,168 @@ const Messages = () => {
   // Mobile layout when chat is selected
   if (selectedUserId) {
     return (
-      <div className="h-screen bg-background overflow-hidden">
-        <ChatWindow 
-          userId={selectedUserId} 
-          onBack={() => setSelectedUserId(null)}
-        />
-      </div>
+      <ChatWindow 
+        userId={selectedUserId} 
+        onBack={() => setSelectedUserId(null)}
+      />
     );
   }
 
-  // Desktop/tablet layout or mobile when no chat selected
+  // Main messages page
   return (
-    <div className="min-h-screen plazoid-grid bg-background">
+    <div className="min-h-screen bg-background">
       <Header />
-      <div className="h-[calc(100vh-4rem)] flex plazoid-card m-0 sm:m-4 sm:max-w-6xl sm:mx-auto overflow-hidden">
-        <div className="w-full flex flex-col">
-          {/* Messages Header */}
-          <div className="p-4 sm:p-6 border-b border-primary/20 bg-background">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl sm:text-2xl font-bold text-hologram font-['Orbitron']">Messages</h2>
-              <Button className="neon-button text-sm sm:text-base">
-                <MessageSquare className="h-4 w-4 mr-2" />
-                New Chat
-              </Button>
-            </div>
-            
-            {/* Search */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input
-                placeholder="Search users in the future..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 plazoid-card border-primary/20 text-foreground bg-background/50 text-base rounded-full"
-              />
-            </div>
+      
+      <div className="max-w-4xl mx-auto p-4">
+        <div className="modern-card p-6 mb-6">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-6">
+            <h1 className="text-2xl font-bold text-white">Messages</h1>
+            <Button className="btn-primary">
+              <MessageSquare className="h-4 w-4 mr-2" />
+              New Chat
+            </Button>
           </div>
-
-          {/* Content */}
-          <div className="flex-1 overflow-y-auto bg-background">
-            {showUsersList ? (
-              /* Search Results */
-              <div className="p-4">
-                <h3 className="text-lg font-semibold mb-4 text-foreground font-['Orbitron']">Search Results</h3>
-                {filteredUsers.length === 0 ? (
-                  <div className="text-center py-8">
-                    <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <p className="text-muted-foreground">No users found in this dimension</p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {filteredUsers.map((u) => (
-                      <div
-                        key={u.id}
-                        onClick={() => startChat(u.id)}
-                        className="flex items-center gap-3 p-3 hover:bg-primary/10 rounded-lg cursor-pointer interactive-glow plazoid-glass"
-                      >
-                        <div className="story-ring">
-                          <Avatar className="h-12 w-12">
-                            <AvatarImage src={u.avatar_url || ''} />
-                            <AvatarFallback className="bg-gradient-to-r from-primary to-secondary text-white font-['Orbitron']">
-                              {u.username.charAt(0).toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <h3 className="font-semibold text-foreground truncate">{u.username}</h3>
-                            {u.is_verified && <Crown className="h-4 w-4 text-accent flex-shrink-0" />}
-                          </div>
-                          {u.full_name && (
-                            <p className="text-sm text-muted-foreground truncate">{u.full_name}</p>
-                          )}
-                        </div>
-                        <Button size="sm" className="neon-button flex-shrink-0">
-                          Message
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ) : (
-              <>
-                {/* Color Rooms */}
-                <div className="p-4 border-b border-primary/20">
-                  <h3 className="text-lg font-semibold mb-4 text-foreground font-['Orbitron'] flex items-center gap-2">
-                    <Hash className="h-5 w-5 text-primary" />
-                    Color Rooms
-                  </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    {colorRooms.map((room) => (
-                      <div
-                        key={room.id}
-                        onClick={() => startChat(room.id)}
-                        className="room-card"
-                      >
-                        <div className="flex items-center gap-3 mb-2">
-                          <span className="text-2xl">{room.icon}</span>
-                          <h4 className="font-semibold text-foreground font-['Orbitron']">{room.name}</h4>
-                        </div>
-                        <p className="text-sm text-muted-foreground">{room.description}</p>
-                        <div className={`h-2 w-full bg-gradient-to-r ${room.gradient} rounded-full mt-3 opacity-60`} />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* AI Assistant */}
-                <div className="p-4 border-b border-primary/20 bg-background">
-                  <div 
-                    onClick={() => startChat('ai-assistant')}
-                    className="flex items-center gap-3 p-3 hover:bg-primary/10 rounded-lg cursor-pointer hologram transition-colors"
-                  >
-                    <div className="w-12 h-12 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center flex-shrink-0">
-                      <Zap className="h-6 w-6 text-white" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-foreground font-['Orbitron']">PlazoidAI Assistant</h3>
-                      <p className="text-sm text-muted-foreground">Your guide to the digital future!</p>
-                    </div>
-                    <div className="achievement-badge w-6 h-6 flex items-center justify-center flex-shrink-0">
-                      <span className="text-xs">🤖</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Recent Chats */}
-                <ConversationsList onSelectConversation={setSelectedUserId} />
-
-                {/* Suggested People */}
-                <div className="p-4 bg-background">
-                  <h3 className="text-lg font-semibold mb-4 text-foreground font-['Orbitron']">Future Connections</h3>
-                  <div className="grid grid-cols-2 gap-3">
-                    {allUsers.slice(0, 6).map((u) => (
-                      <div
-                        key={u.id}
-                        onClick={() => startChat(u.id)}
-                        className="plazoid-card p-3 text-center cursor-pointer interactive-glow transition-colors"
-                      >
-                        <div className="story-ring mx-auto mb-2 w-fit">
-                          <Avatar className="h-10 w-10">
-                            <AvatarImage src={u.avatar_url || ''} />
-                            <AvatarFallback className="bg-gradient-to-r from-primary to-secondary text-white font-['Orbitron']">
-                              {u.username.charAt(0).toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                        </div>
-                        <p className="text-sm font-medium text-foreground truncate">{u.username}</p>
-                        {u.is_verified && <Crown className="h-3 w-3 text-accent mx-auto mt-1" />}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </>
-            )}
+          
+          {/* Search */}
+          <div className="relative mb-6">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <Input
+              placeholder="Search users..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="modern-input pl-10"
+            />
           </div>
         </div>
+
+        {/* Content */}
+        {showUsersList ? (
+          /* Search Results */
+          <div className="modern-card p-6">
+            <h2 className="text-lg font-semibold mb-4 text-white">Search Results</h2>
+            {filteredUsers.length === 0 ? (
+              <div className="text-center py-8">
+                <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-400">No users found</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {filteredUsers.map((u) => (
+                  <div
+                    key={u.id}
+                    onClick={() => startChat(u.id)}
+                    className="flex items-center gap-3 p-3 hover:bg-white/5 rounded-lg cursor-pointer transition-colors"
+                  >
+                    <Avatar className="h-12 w-12">
+                      <AvatarImage src={u.avatar_url || ''} />
+                      <AvatarFallback className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white">
+                        {u.username.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-semibold text-white truncate">{u.username}</h3>
+                        {u.is_verified && (
+                          <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
+                            <span className="text-white text-xs">✓</span>
+                          </div>
+                        )}
+                      </div>
+                      {u.full_name && (
+                        <p className="text-sm text-gray-400 truncate">{u.full_name}</p>
+                      )}
+                    </div>
+                    <Button size="sm" className="btn-primary">
+                      Message
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {/* Color Rooms */}
+            <div className="modern-card p-6">
+              <h2 className="text-lg font-semibold mb-4 text-white flex items-center gap-2">
+                <Hash className="h-5 w-5 text-indigo-400" />
+                Color Rooms
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {colorRooms.map((room) => (
+                  <div
+                    key={room.id}
+                    onClick={() => startChat(room.id)}
+                    className="p-4 rounded-lg cursor-pointer transition-all hover:scale-105 bg-gradient-to-r hover:shadow-lg"
+                    style={{
+                      background: `linear-gradient(135deg, rgb(99 102 241 / 0.1), rgb(147 51 234 / 0.1))`,
+                      border: '1px solid rgb(99 102 241 / 0.2)'
+                    }}
+                  >
+                    <div className="flex items-center gap-3 mb-2">
+                      <span className="text-2xl">{room.icon}</span>
+                      <h3 className="font-semibold text-white">{room.name}</h3>
+                    </div>
+                    <p className="text-sm text-gray-400">{room.description}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* AI Assistant */}
+            <div className="modern-card p-6">
+              <div 
+                onClick={() => startChat('ai-assistant')}
+                className="flex items-center gap-3 p-4 hover:bg-white/5 rounded-lg cursor-pointer transition-colors"
+              >
+                <div className="w-12 h-12 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center">
+                  <Bot className="h-6 w-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-white">Plazoid AI</h3>
+                  <p className="text-sm text-gray-400">Your personal assistant</p>
+                </div>
+                <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                  <span className="text-xs">🤖</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Recent Conversations */}
+            <ConversationsList onSelectConversation={setSelectedUserId} />
+
+            {/* Suggested People */}
+            {!loading && allUsers.length > 0 && (
+              <div className="modern-card p-6">
+                <h2 className="text-lg font-semibold mb-4 text-white">Suggested People</h2>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  {allUsers.slice(0, 8).map((u) => (
+                    <div
+                      key={u.id}
+                      onClick={() => startChat(u.id)}
+                      className="p-3 text-center cursor-pointer hover:bg-white/5 rounded-lg transition-colors"
+                    >
+                      <Avatar className="h-12 w-12 mx-auto mb-2">
+                        <AvatarImage src={u.avatar_url || ''} />
+                        <AvatarFallback className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white">
+                          {u.username.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <p className="text-sm font-medium text-white truncate">{u.username}</p>
+                      {u.is_verified && (
+                        <div className="w-3 h-3 bg-blue-500 rounded-full mx-auto mt-1" />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
       
-      {/* Add bottom padding for mobile navigation */}
+      {/* Mobile padding */}
       <div className="h-20 md:h-0"></div>
     </div>
   );
