@@ -1,20 +1,23 @@
+
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Send, Smile } from 'lucide-react';
+import { Send, Smile, Zap } from 'lucide-react';
 
 interface MessageInputProps {
   onSendMessage: (message: string) => Promise<void>;
   onSendReaction: (emoji: string) => Promise<void>;
+  onTyping?: (isTyping: boolean) => void;
   sending: boolean;
 }
 
-const MessageInput = ({ onSendMessage, onSendReaction, sending }: MessageInputProps) => {
+const MessageInput = ({ onSendMessage, onSendReaction, onTyping, sending }: MessageInputProps) => {
   const [newMessage, setNewMessage] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    // Handle viewport height changes on mobile when keyboard appears
     const handleResize = () => {
       const vh = window.innerHeight * 0.01;
       document.documentElement.style.setProperty('--vh', `${vh}px`);
@@ -30,6 +33,35 @@ const MessageInput = ({ onSendMessage, onSendReaction, sending }: MessageInputPr
     };
   }, []);
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setNewMessage(value);
+
+    // Handle typing indicator
+    if (onTyping) {
+      if (value.trim() && !isTyping) {
+        setIsTyping(true);
+        onTyping(true);
+      } else if (!value.trim() && isTyping) {
+        setIsTyping(false);
+        onTyping(false);
+      }
+
+      // Clear previous timeout
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+
+      // Set timeout to stop typing indicator after 2 seconds of no typing
+      if (value.trim()) {
+        typingTimeoutRef.current = setTimeout(() => {
+          setIsTyping(false);
+          onTyping(false);
+        }, 2000);
+      }
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMessage.trim() || sending) return;
@@ -37,7 +69,16 @@ const MessageInput = ({ onSendMessage, onSendReaction, sending }: MessageInputPr
     const messageContent = newMessage.trim();
     setNewMessage('');
     
-    // Keep focus on input for better UX
+    // Stop typing indicator
+    if (isTyping && onTyping) {
+      setIsTyping(false);
+      onTyping(false);
+    }
+    
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+    
     if (inputRef.current) {
       inputRef.current.focus();
     }
@@ -52,40 +93,62 @@ const MessageInput = ({ onSendMessage, onSendReaction, sending }: MessageInputPr
     }
   };
 
+  const reactions = ['😊', '❤️', '🔥', '⚡', '🚀', '✨'];
+
   return (
-    <div className="sticky bottom-0 left-0 right-0 z-10 p-3 sm:p-4 border-t border-primary/20 bg-background/95 backdrop-blur-md">
+    <div className="chat-input-container mobile-safe-area">
       <div className="max-w-4xl mx-auto">
         <form onSubmit={handleSubmit} className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            type="button"
-            onClick={() => onSendReaction('😊')}
-            className="text-muted-foreground hover:text-foreground flex-shrink-0 p-2"
-            aria-label="Send smile reaction"
-          >
-            <Smile className="h-5 w-5" />
-          </Button>
+          <div className="flex gap-1">
+            {reactions.map((emoji) => (
+              <Button
+                key={emoji}
+                variant="ghost"
+                type="button"
+                onClick={() => onSendReaction(emoji)}
+                className="text-lg hover:scale-110 transition-transform p-2 h-auto rounded-full hover:bg-primary/10"
+                aria-label={`Send ${emoji} reaction`}
+              >
+                {emoji}
+              </Button>
+            ))}
+          </div>
+          
           <div className="flex-1 relative">
             <Input
               ref={inputRef}
               type="text"
-              placeholder="Type your message..."
+              placeholder="Message the future..."
               value={newMessage}
-              onChange={e => setNewMessage(e.target.value)}
+              onChange={handleInputChange}
               onKeyPress={handleKeyPress}
               disabled={sending}
-              className="w-full rounded-full py-3 px-4 bg-muted/50 focus:bg-muted/80 placeholder:text-muted-foreground border-primary/20 text-base"
+              className="chat-input pr-12"
               autoComplete="off"
               aria-label="Message input"
             />
+            {isTyping && (
+              <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                <div className="typing-indicator">
+                  <div className="typing-dot w-1 h-1"></div>
+                  <div className="typing-dot w-1 h-1"></div>
+                  <div className="typing-dot w-1 h-1"></div>
+                </div>
+              </div>
+            )}
           </div>
+          
           <Button
             type="submit"
             disabled={sending || !newMessage.trim()}
             aria-label="Send message"
-            className="rounded-full p-3 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+            className="neon-button rounded-full p-3 flex-shrink-0"
           >
-            <Send className="h-4 w-4" />
+            {sending ? (
+              <div className="loading-logo w-4 h-4" />
+            ) : (
+              <Send className="h-4 w-4" />
+            )}
           </Button>
         </form>
       </div>

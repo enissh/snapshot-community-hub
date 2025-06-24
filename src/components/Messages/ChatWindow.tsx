@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -6,6 +5,7 @@ import { toast } from 'sonner';
 import ChatHeader from './ChatHeader';
 import MessagesList from './MessagesList';
 import MessageInput from './MessageInput';
+import TypingIndicator from './TypingIndicator';
 
 // Types
 type Message = {
@@ -38,8 +38,10 @@ const ChatWindow = ({ userId, onBack }: ChatWindowProps) => {
   const [sending, setSending] = useState(false);
   const [typing, setTyping] = useState(false);
   const [isAI, setIsAI] = useState(false);
+  const [otherUserTyping, setOtherUserTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const channelRef = useRef<any>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const scrollToBottom = useCallback(() => {
     if (messagesEndRef.current) {
@@ -56,7 +58,7 @@ const ChatWindow = ({ userId, onBack }: ChatWindowProps) => {
       setIsAI(true);
       setOtherUser({
         id: 'ai-assistant',
-        username: 'PlazaGram AI',
+        username: 'PlazoidAI',
         avatar_url: null,
         full_name: 'AI Assistant',
         is_verified: true
@@ -64,7 +66,7 @@ const ChatWindow = ({ userId, onBack }: ChatWindowProps) => {
       setMessages([
         {
           id: '1',
-          content: "👋 Hey! I'm your PlazaGram AI assistant. I can help you with:\n\n🎨 Generate captions\n📈 Profile tips\n💡 Content ideas\n🔥 Hashtag suggestions\n\nWhat would you like help with today?",
+          content: "🚀 Welcome to Plazoid! I'm your AI assistant from the future. I can help you with:\n\n✨ Generate futuristic captions\n🔮 Profile optimization tips\n💫 Content ideas from 2100\n🌟 Hashtag suggestions\n\nWhat would you like to explore today?",
           sender_id: 'ai-assistant',
           created_at: new Date().toISOString()
         }
@@ -82,6 +84,9 @@ const ChatWindow = ({ userId, onBack }: ChatWindowProps) => {
         supabase.removeChannel(channelRef.current);
       }
       if (cleanup) cleanup();
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
     };
   }, [userId, currentUser]);
 
@@ -97,11 +102,12 @@ const ChatWindow = ({ userId, onBack }: ChatWindowProps) => {
       supabase.removeChannel(channelRef.current);
     }
 
-    const channelName = `messages-${[currentUser.id, userId].sort().join('-')}`;
+    const channelName = `chat-${[currentUser.id, userId].sort().join('-')}`;
     const channel = supabase.channel(channelName);
 
     channelRef.current = channel;
 
+    // Listen for new messages
     channel.on(
       'postgres_changes',
       {
@@ -125,6 +131,7 @@ const ChatWindow = ({ userId, onBack }: ChatWindowProps) => {
         });
 
         if (newMsg.sender_id !== currentUser.id) {
+          setOtherUserTyping(false);
           const isChatActive = document.visibilityState === 'visible' && document.hasFocus();
 
           if (!isChatActive) {
@@ -134,11 +141,40 @@ const ChatWindow = ({ userId, onBack }: ChatWindowProps) => {
           }
         }
       }
-    ).subscribe();
+    );
+
+    // Listen for typing indicators
+    channel.on('broadcast', { event: 'typing' }, ({ payload }) => {
+      if (payload.user_id !== currentUser.id) {
+        setOtherUserTyping(payload.typing);
+        
+        if (payload.typing) {
+          // Clear typing after 3 seconds of no activity
+          if (typingTimeoutRef.current) {
+            clearTimeout(typingTimeoutRef.current);
+          }
+          typingTimeoutRef.current = setTimeout(() => {
+            setOtherUserTyping(false);
+          }, 3000);
+        }
+      }
+    });
+
+    channel.subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
+  };
+
+  const sendTypingIndicator = (isTyping: boolean) => {
+    if (channelRef.current && !isAI) {
+      channelRef.current.send({
+        type: 'broadcast',
+        event: 'typing',
+        payload: { user_id: currentUser?.id, typing: isTyping }
+      });
+    }
   };
 
   const fetchOtherUser = async () => {
@@ -178,9 +214,9 @@ const ChatWindow = ({ userId, onBack }: ChatWindowProps) => {
     if (!currentUser || sending) return;
 
     setSending(true);
+    sendTypingIndicator(false);
 
     if (isAI) {
-      // Show user message immediately
       const userMsg: Message = {
         id: `temp-user-${Date.now()}`,
         content: messageContent,
@@ -189,7 +225,6 @@ const ChatWindow = ({ userId, onBack }: ChatWindowProps) => {
       };
       setMessages(prev => [...prev, userMsg]);
 
-      // Simulate AI typing and response
       setTyping(true);
       setTimeout(() => {
         const aiResponse: Message = {
@@ -201,12 +236,11 @@ const ChatWindow = ({ userId, onBack }: ChatWindowProps) => {
         setMessages(prev => [...prev, aiResponse]);
         setTyping(false);
         setSending(false);
-      }, 1500);
+      }, 2000);
 
       return;
     }
 
-    // Add optimistic update for instant display
     const tempMessage: Message = {
       id: `temp-${Date.now()}`,
       content: messageContent,
@@ -230,7 +264,6 @@ const ChatWindow = ({ userId, onBack }: ChatWindowProps) => {
 
       if (error) throw error;
 
-      // Replace temp message with real message
       setMessages(prev => 
         prev.map(msg => 
           msg.id === tempMessage.id ? data : msg
@@ -239,7 +272,6 @@ const ChatWindow = ({ userId, onBack }: ChatWindowProps) => {
     } catch (error) {
       console.error('Error sending message:', error);
       toast.error('Failed to send message');
-      // Remove temp message on error
       setMessages(prev => prev.filter(msg => msg.id !== tempMessage.id));
     } finally {
       setSending(false);
@@ -259,7 +291,7 @@ const ChatWindow = ({ userId, onBack }: ChatWindowProps) => {
       setTimeout(() => {
         const aiResponse: Message = {
           id: `ai-response-${Date.now()}`,
-          content: `${emoji} right back at you! What else can I help you with?`,
+          content: `${emoji} Future vibes! What else can I help you with?`,
           sender_id: 'ai-assistant',
           created_at: new Date().toISOString()
         };
@@ -279,7 +311,7 @@ const ChatWindow = ({ userId, onBack }: ChatWindowProps) => {
           content: emoji
         });
 
-      toast.success('Reaction sent! 😊');
+      toast.success('Reaction sent! ✨');
     } catch (error) {
       console.error('Error sending reaction:', error);
       toast.error('Failed to send reaction');
@@ -289,20 +321,20 @@ const ChatWindow = ({ userId, onBack }: ChatWindowProps) => {
   const generateAIResponse = (userMessage: string) => {
     const responses = {
       caption: [
-        "✨ Here are some caption ideas:\n\n• \"Living my best life, one post at a time\"\n• \"Chasing dreams and capturing moments\"\n• \"Creating memories that last forever\"\n• \"In a world full of trends, be a classic\"",
-        "🎨 Creative captions for you:\n\n• \"Plot twist: I'm the main character\"\n• \"Currently starring in my own reality show\"\n• \"Proof that I can take a decent photo\"\n• \"Just because you're awake doesn't mean you should stop dreaming\""
+        "✨ Futuristic captions from 2100:\n\n• \"Living in the future, one post at a time\"\n• \"Digital dreams, analog soul\"\n• \"Crafting tomorrow's memories today\"\n• \"In a world of pixels, be the resolution\"",
+        "🚀 Next-gen caption ideas:\n\n• \"Plot twist: I'm the main character in this simulation\"\n• \"Currently starring in my own holographic reality\"\n• \"Proof that I exist in multiple dimensions\"\n• \"Dreams are just previews of tomorrow's reality\""
       ],
       hashtag: [
-        "🔥 Trending hashtags:\n\n#PlazaGram #Aesthetic #Mood #Vibes #PhotoOfTheDay #InstaGood #Beautiful #Life #Style #Amazing #Cool #Fun #Happy #Love #Inspo",
-        "📈 Popular tags to boost engagement:\n\n#TrendingNow #Viral #Explore #Discover #Content #Creator #Influencer #Lifestyle #Fashion #Art #Photography #Digital #Future"
+        "🔥 Trending from the future:\n\n#Plazoid #FutureVibes #DigitalNomad #CyberAesthetic #NeonLife #TechSoul #MetaVerse #QuantumMood #HoloGram #ElectricDreams",
+        "📈 Next-level hashtags:\n\n#PlazoidLife #CyberPunk2100 #NeonNights #DigitalDreamer #FuturisticVibes #TechnoSoul #VirtualReality #CosmicEnergy #ElectronicEmotion"
       ],
       tips: [
-        "💡 Profile tips:\n\n• Post consistently (1-2 times daily)\n• Use high-quality images\n• Engage with your audience\n• Use relevant hashtags\n• Post when your audience is active\n• Tell stories in your captions",
-        "🚀 Growth strategies:\n\n• Collaborate with others\n• Use trending sounds in reels\n• Share behind-the-scenes content\n• Ask questions in captions\n• Cross-promote on other platforms\n• Create series content"
+        "💡 Future-proof profile tips:\n\n• Post during peak neural activity hours\n• Use holographic filters for depth\n• Engage with quantum comments\n• Share interdimensional stories\n• Cross-post to parallel universes",
+        "🚀 Advanced growth strategies:\n\n• Collaborate with AI influencers\n• Use temporal hashtags\n• Create immersive AR content\n• Host virtual reality meetups\n• Build your digital twin presence"
       ],
       ideas: [
-        "💭 Content ideas:\n\n• Day in the life vlogs\n• Before/after transformations\n• Tutorial or how-to posts\n• Behind the scenes content\n• Q&A sessions\n• Throwback posts\n• Motivational quotes",
-        "🎬 Creative post concepts:\n\n• Time-lapse videos\n• Photo dumps\n• Outfit of the day\n• Food photography\n• Travel content\n• Pet photos\n• Sunset/sunrise shots"
+        "💭 Content from the future:\n\n• Day in the life of a digital nomad\n• Before/after reality transformations\n• Holographic tutorials\n• Behind the simulation content\n• Time-travel Q&As\n• Nostalgic 2024 throwbacks",
+        "🎬 Futuristic post concepts:\n\n• Time-lapse of city evolution\n• Digital fashion shows\n• Neon food photography\n• Virtual travel content\n• AI pet adventures\n• Sunset from Mars"
       ]
     };
 
@@ -312,12 +344,12 @@ const ChatWindow = ({ userId, onBack }: ChatWindowProps) => {
     if (message.includes('tip') || message.includes('help') || message.includes('grow')) return responses.tips[Math.floor(Math.random() * responses.tips.length)];
     if (message.includes('idea') || message.includes('content') || message.includes('post')) return responses.ideas[Math.floor(Math.random() * responses.ideas.length)];
     
-    return "🤖 I'm here to help! Try asking me about:\n\n• Caption ideas\n• Hashtag suggestions\n• Growth tips\n• Content ideas\n\nWhat specific help do you need?";
+    return "🤖 I'm your AI guide from the future! Try asking me about:\n\n• Futuristic captions\n• Next-gen hashtags\n• Growth strategies\n• Content ideas from 2100\n\nWhat do you want to explore?";
   };
 
   if (loading || !otherUser) {
     return (
-      <div className="h-screen flex items-center justify-center cyber-card w-full">
+      <div className="h-screen flex items-center justify-center plazoid-card w-full">
         <div className="text-center">
           <div className="loading-logo w-16 h-16 mx-auto mb-4"></div>
           <p className="text-muted-foreground">Loading conversation...</p>
@@ -328,18 +360,22 @@ const ChatWindow = ({ userId, onBack }: ChatWindowProps) => {
 
   return (
     <div className="h-screen flex flex-col w-full bg-background relative">
-      <ChatHeader otherUser={otherUser} onBack={onBack} typing={typing} />
-      <div className="flex-1 overflow-hidden">
+      <ChatHeader otherUser={otherUser} onBack={onBack} typing={typing || otherUserTyping} />
+      <div className="flex-1 overflow-hidden plazoid-grid">
         <MessagesList 
           messages={messages} 
           otherUser={otherUser} 
           currentUser={currentUser}
           ref={messagesEndRef}
         />
+        {otherUserTyping && (
+          <TypingIndicator username={otherUser.username} />
+        )}
       </div>
       <MessageInput 
         onSendMessage={sendMessage}
         onSendReaction={sendReaction}
+        onTyping={sendTypingIndicator}
         sending={sending}
       />
     </div>

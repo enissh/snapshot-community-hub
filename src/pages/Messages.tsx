@@ -8,7 +8,7 @@ import ChatWindow from '@/components/Messages/ChatWindow';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Search, Users, MessageSquare, Bot, Crown } from 'lucide-react';
+import { Search, Users, MessageSquare, Zap, Crown, Hash } from 'lucide-react';
 
 interface User {
   id: string;
@@ -17,6 +17,30 @@ interface User {
   full_name: string | null;
   is_verified: boolean;
 }
+
+const colorRooms = [
+  {
+    id: 'neon-lounge',
+    name: 'Neon Lounge',
+    description: 'Electric conversations in purple & cyan',
+    gradient: 'from-purple-500 to-cyan-400',
+    icon: '💜'
+  },
+  {
+    id: 'crimson-chat',
+    name: 'Crimson Chat',
+    description: 'Hot discussions in red & magenta',
+    gradient: 'from-red-500 to-pink-500',
+    icon: '❤️'
+  },
+  {
+    id: 'aura-club',
+    name: 'Aura Club',
+    description: 'Mystical vibes in lime & electric',
+    gradient: 'from-lime-400 to-cyan-300',
+    icon: '✨'
+  }
+];
 
 const Messages = () => {
   const { user } = useAuth();
@@ -80,14 +104,14 @@ const Messages = () => {
 
   // Desktop/tablet layout or mobile when no chat selected
   return (
-    <div className="min-h-screen cyber-grid bg-background">
+    <div className="min-h-screen plazoid-grid bg-background">
       <Header />
-      <div className="h-[calc(100vh-4rem)] flex cyber-card m-0 sm:m-4 sm:max-w-6xl sm:mx-auto overflow-hidden">
+      <div className="h-[calc(100vh-4rem)] flex plazoid-card m-0 sm:m-4 sm:max-w-6xl sm:mx-auto overflow-hidden">
         <div className="w-full flex flex-col">
           {/* Messages Header */}
           <div className="p-4 sm:p-6 border-b border-primary/20 bg-background">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl sm:text-2xl font-bold text-hologram">Messages</h2>
+              <h2 className="text-xl sm:text-2xl font-bold text-hologram font-['Orbitron']">Messages</h2>
               <Button className="neon-button text-sm sm:text-base">
                 <MessageSquare className="h-4 w-4 mr-2" />
                 New Chat
@@ -98,10 +122,10 @@ const Messages = () => {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
-                placeholder="Search for users to message..."
+                placeholder="Search users in the future..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 cyber-card border-primary/20 text-foreground bg-background text-base"
+                className="pl-10 plazoid-card border-primary/20 text-foreground bg-background/50 text-base rounded-full"
               />
             </div>
           </div>
@@ -111,11 +135,11 @@ const Messages = () => {
             {showUsersList ? (
               /* Search Results */
               <div className="p-4">
-                <h3 className="text-lg font-semibold mb-4 text-foreground">Search Results</h3>
+                <h3 className="text-lg font-semibold mb-4 text-foreground font-['Orbitron']">Search Results</h3>
                 {filteredUsers.length === 0 ? (
                   <div className="text-center py-8">
                     <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <p className="text-muted-foreground">No users found</p>
+                    <p className="text-muted-foreground">No users found in this dimension</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -123,12 +147,12 @@ const Messages = () => {
                       <div
                         key={u.id}
                         onClick={() => startChat(u.id)}
-                        className="flex items-center gap-3 p-3 hover:bg-primary/10 rounded-lg cursor-pointer transition-colors interactive-glow"
+                        className="flex items-center gap-3 p-3 hover:bg-primary/10 rounded-lg cursor-pointer interactive-glow plazoid-glass"
                       >
                         <div className="story-ring">
                           <Avatar className="h-12 w-12">
                             <AvatarImage src={u.avatar_url || ''} />
-                            <AvatarFallback className="bg-gradient-to-r from-primary to-accent text-white">
+                            <AvatarFallback className="bg-gradient-to-r from-primary to-secondary text-white font-['Orbitron']">
                               {u.username.charAt(0).toUpperCase()}
                             </AvatarFallback>
                           </Avatar>
@@ -152,18 +176,42 @@ const Messages = () => {
               </div>
             ) : (
               <>
+                {/* Color Rooms */}
+                <div className="p-4 border-b border-primary/20">
+                  <h3 className="text-lg font-semibold mb-4 text-foreground font-['Orbitron'] flex items-center gap-2">
+                    <Hash className="h-5 w-5 text-primary" />
+                    Color Rooms
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    {colorRooms.map((room) => (
+                      <div
+                        key={room.id}
+                        onClick={() => startChat(room.id)}
+                        className="room-card"
+                      >
+                        <div className="flex items-center gap-3 mb-2">
+                          <span className="text-2xl">{room.icon}</span>
+                          <h4 className="font-semibold text-foreground font-['Orbitron']">{room.name}</h4>
+                        </div>
+                        <p className="text-sm text-muted-foreground">{room.description}</p>
+                        <div className={`h-2 w-full bg-gradient-to-r ${room.gradient} rounded-full mt-3 opacity-60`} />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
                 {/* AI Assistant */}
                 <div className="p-4 border-b border-primary/20 bg-background">
                   <div 
                     onClick={() => startChat('ai-assistant')}
                     className="flex items-center gap-3 p-3 hover:bg-primary/10 rounded-lg cursor-pointer hologram transition-colors"
                   >
-                    <div className="w-12 h-12 bg-gradient-to-r from-primary to-accent rounded-full flex items-center justify-center flex-shrink-0">
-                      <Bot className="h-6 w-6 text-white" />
+                    <div className="w-12 h-12 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center flex-shrink-0">
+                      <Zap className="h-6 w-6 text-white" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-foreground">PlazaGram AI Assistant</h3>
-                      <p className="text-sm text-muted-foreground">Get suggestions, captions, and more!</p>
+                      <h3 className="font-semibold text-foreground font-['Orbitron']">PlazoidAI Assistant</h3>
+                      <p className="text-sm text-muted-foreground">Your guide to the digital future!</p>
                     </div>
                     <div className="achievement-badge w-6 h-6 flex items-center justify-center flex-shrink-0">
                       <span className="text-xs">🤖</span>
@@ -176,18 +224,18 @@ const Messages = () => {
 
                 {/* Suggested People */}
                 <div className="p-4 bg-background">
-                  <h3 className="text-lg font-semibold mb-4 text-foreground">Suggested People</h3>
+                  <h3 className="text-lg font-semibold mb-4 text-foreground font-['Orbitron']">Future Connections</h3>
                   <div className="grid grid-cols-2 gap-3">
                     {allUsers.slice(0, 6).map((u) => (
                       <div
                         key={u.id}
                         onClick={() => startChat(u.id)}
-                        className="cyber-card p-3 text-center cursor-pointer interactive-glow transition-colors"
+                        className="plazoid-card p-3 text-center cursor-pointer interactive-glow transition-colors"
                       >
                         <div className="story-ring mx-auto mb-2 w-fit">
                           <Avatar className="h-10 w-10">
                             <AvatarImage src={u.avatar_url || ''} />
-                            <AvatarFallback className="bg-gradient-to-r from-primary to-accent text-white">
+                            <AvatarFallback className="bg-gradient-to-r from-primary to-secondary text-white font-['Orbitron']">
                               {u.username.charAt(0).toUpperCase()}
                             </AvatarFallback>
                           </Avatar>
