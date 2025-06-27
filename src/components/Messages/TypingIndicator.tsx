@@ -11,7 +11,7 @@ const TypingIndicator = ({ username }: TypingIndicatorProps) => {
       <div className="typing-dot"></div>
       <div className="typing-dot"></div>
       <div className="typing-dot"></div>
-      <span className="text-xs text-gray-400 ml-2">
+      <span className="text-xs text-gray-500 ml-2">
         {username} is typing...
       </span>
     </div>

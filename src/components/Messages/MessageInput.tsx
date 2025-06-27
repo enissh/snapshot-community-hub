@@ -93,7 +93,7 @@ const MessageInput = ({ onSendMessage, onSendReaction, onTyping, sending }: Mess
             variant="ghost"
             type="button"
             onClick={() => onSendReaction(emoji)}
-            className="text-lg hover:scale-110 transition-transform p-2 h-auto rounded-full hover:bg-white/10 flex-shrink-0"
+            className="text-lg hover:scale-110 transition-transform p-2 h-auto rounded-full hover:bg-orange-50 flex-shrink-0"
             disabled={sending}
           >
             {emoji}

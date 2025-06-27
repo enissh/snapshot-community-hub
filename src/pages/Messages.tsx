@@ -22,21 +22,21 @@ const colorRooms = [
     id: 'general-chat',
     name: 'General Chat',
     description: 'Main discussion room',
-    color: 'bg-indigo-600',
+    color: 'primary',
     icon: '💬'
   },
   {
     id: 'tech-talk',
     name: 'Tech Talk', 
     description: 'Technology discussions',
-    color: 'bg-purple-600',
+    color: 'secondary',
     icon: '🚀'
   },
   {
     id: 'lounge',
     name: 'Lounge',
     description: 'Casual conversations',
-    color: 'bg-blue-600', 
+    color: 'tertiary', 
     icon: '🛋️'
   }
 ];
@@ -107,14 +107,14 @@ const Messages = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gray-50">
       <Header />
       
       <div className="container mx-auto p-4 max-w-4xl">
         {/* Header */}
-        <div className="modern-card p-4 mb-4">
+        <div className="modern-card p-6 mb-6">
           <div className="flex items-center justify-between mb-4">
-            <h1 className="text-xl font-bold text-white">Messages</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Messages</h1>
             <Button className="btn-primary text-sm">
               <MessageSquare className="h-4 w-4 mr-2" />
               New Chat
@@ -136,12 +136,12 @@ const Messages = () => {
         {/* Content */}
         {showUsersList ? (
           /* Search Results */
-          <div className="modern-card p-4">
-            <h2 className="text-lg font-semibold mb-4 text-white">Search Results</h2>
+          <div className="modern-card p-6">
+            <h2 className="text-lg font-semibold mb-4 text-gray-900">Search Results</h2>
             {filteredUsers.length === 0 ? (
-              <div className="text-center py-8">
-                <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-400">No users found</p>
+              <div className="text-center py-12">
+                <Users className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                <p className="text-gray-500">No users found</p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -149,25 +149,25 @@ const Messages = () => {
                   <div
                     key={u.id}
                     onClick={() => startChat(u.id)}
-                    className="flex items-center gap-3 p-3 hover:bg-white/5 rounded-lg cursor-pointer transition-colors"
+                    className="flex items-center gap-4 p-4 hover:bg-gray-50 rounded-xl cursor-pointer transition-colors border border-gray-100"
                   >
                     <Avatar className="h-12 w-12">
                       <AvatarImage src={u.avatar_url || ''} />
-                      <AvatarFallback className="bg-indigo-600 text-white">
+                      <AvatarFallback className="bg-orange-500 text-white">
                         {u.username.charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <h3 className="font-semibold text-white truncate">{u.username}</h3>
+                        <h3 className="font-semibold text-gray-900 truncate">{u.username}</h3>
                         {u.is_verified && (
-                          <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
+                          <div className="w-5 h-5 bg-orange-500 rounded-full flex items-center justify-center">
                             <span className="text-white text-xs">✓</span>
                           </div>
                         )}
                       </div>
                       {u.full_name && (
-                        <p className="text-sm text-gray-400 truncate">{u.full_name}</p>
+                        <p className="text-sm text-gray-500 truncate">{u.full_name}</p>
                       )}
                     </div>
                     <Button size="sm" className="btn-primary">
@@ -179,67 +179,67 @@ const Messages = () => {
             )}
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-6">
             {/* Chat Rooms */}
-            <div className="modern-card p-4">
-              <h2 className="text-lg font-semibold mb-4 text-white flex items-center gap-2">
-                <Hash className="h-5 w-5 text-indigo-500" />
+            <div className="modern-card p-6">
+              <h2 className="text-lg font-semibold mb-4 text-gray-900 flex items-center gap-2">
+                <Hash className="h-5 w-5 text-orange-500" />
                 Chat Rooms
               </h2>
-              <div className="grid grid-cols-1 gap-3">
+              <div className="grid grid-cols-1 gap-4">
                 {colorRooms.map((room) => (
                   <div
                     key={room.id}
                     onClick={() => startChat(room.id)}
-                    className={`p-4 rounded-lg cursor-pointer transition-all hover:opacity-80 ${room.color}`}
+                    className={`room-card ${room.color}`}
                   >
                     <div className="flex items-center gap-3 mb-2">
                       <span className="text-2xl">{room.icon}</span>
-                      <h3 className="font-semibold text-white">{room.name}</h3>
+                      <h3 className="font-semibold">{room.name}</h3>
                     </div>
-                    <p className="text-sm text-white/80">{room.description}</p>
+                    <p className="text-sm opacity-90">{room.description}</p>
                   </div>
                 ))}
               </div>
             </div>
 
             {/* AI Assistant */}
-            <div className="modern-card p-4">
+            <div className="modern-card p-6">
               <div 
                 onClick={() => startChat('ai-assistant')}
-                className="flex items-center gap-3 p-4 hover:bg-white/5 rounded-lg cursor-pointer transition-colors"
+                className="flex items-center gap-4 p-4 hover:bg-gray-50 rounded-xl cursor-pointer transition-colors border border-gray-100"
               >
-                <div className="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center">
+                <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center">
                   <Bot className="h-6 w-6 text-white" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-semibold text-white">Plazoid AI</h3>
-                  <p className="text-sm text-gray-400">Your personal assistant</p>
+                  <h3 className="font-semibold text-gray-900">Plazoid AI</h3>
+                  <p className="text-sm text-gray-500">Your personal assistant</p>
                 </div>
-                <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                  <span className="text-xs">🤖</span>
+                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                  <span className="text-green-600 text-xs">🤖</span>
                 </div>
               </div>
             </div>
 
             {/* Suggested People */}
             {!loading && allUsers.length > 0 && (
-              <div className="modern-card p-4">
-                <h2 className="text-lg font-semibold mb-4 text-white">Suggested People</h2>
+              <div className="modern-card p-6">
+                <h2 className="text-lg font-semibold mb-4 text-gray-900">Suggested People</h2>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                   {allUsers.slice(0, 8).map((u) => (
                     <div
                       key={u.id}
                       onClick={() => startChat(u.id)}
-                      className="p-3 text-center cursor-pointer hover:bg-white/5 rounded-lg transition-colors"
+                      className="p-4 text-center cursor-pointer hover:bg-gray-50 rounded-xl transition-colors border border-gray-100"
                     >
-                      <Avatar className="h-12 w-12 mx-auto mb-2">
+                      <Avatar className="h-14 w-14 mx-auto mb-3">
                         <AvatarImage src={u.avatar_url || ''} />
-                        <AvatarFallback className="bg-indigo-600 text-white">
+                        <AvatarFallback className="bg-orange-500 text-white">
                           {u.username.charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
-                      <p className="text-sm font-medium text-white truncate">{u.username}</p>
+                      <p className="text-sm font-medium text-gray-900 truncate">{u.username}</p>
                     </div>
                   ))}
                 </div>
@@ -250,7 +250,7 @@ const Messages = () => {
       </div>
       
       {/* Mobile padding for navigation */}
-      <div className="h-4 md:h-0"></div>
+      <div className="h-6 md:h-0"></div>
     </div>
   );
 };
