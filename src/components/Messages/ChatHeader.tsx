@@ -1,7 +1,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ArrowLeft, Phone, Video, MoreVertical } from 'lucide-react';
+import { ArrowLeft, MoreVertical } from 'lucide-react';
 
 interface Profile {
   id: string;
@@ -50,7 +50,7 @@ const ChatHeader = ({ otherUser, onBack, typing }: ChatHeaderProps) => {
           {otherUser.avatar_url ? (
             <AvatarImage src={otherUser.avatar_url} alt={otherUser.username} />
           ) : (
-            <AvatarFallback className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white">
+            <AvatarFallback className="bg-indigo-600 text-white">
               {otherUser.username[0]?.toUpperCase() || '?'}
             </AvatarFallback>
           )}
@@ -71,13 +71,7 @@ const ChatHeader = ({ otherUser, onBack, typing }: ChatHeaderProps) => {
         </div>
       </div>
       
-      <div className="hidden sm:flex items-center gap-1 flex-shrink-0">
-        <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white">
-          <Phone className="h-4 w-4" />
-        </Button>
-        <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white">
-          <Video className="h-4 w-4" />
-        </Button>
+      <div className="flex items-center gap-1 flex-shrink-0">
         <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white">
           <MoreVertical className="h-4 w-4" />
         </Button>

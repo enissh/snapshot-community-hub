@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import Header from '@/components/Layout/Header';
-import ConversationsList from '@/components/Messages/ConversationsList';
 import ChatWindow from '@/components/Messages/ChatWindow';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,25 +19,25 @@ interface User {
 
 const colorRooms = [
   {
-    id: 'neon-lounge',
-    name: 'Neon Lounge',
-    description: 'Electric conversations',
-    color: 'from-indigo-500 to-purple-600',
-    icon: '💜'
+    id: 'general-chat',
+    name: 'General Chat',
+    description: 'Main discussion room',
+    color: 'bg-indigo-600',
+    icon: '💬'
   },
   {
-    id: 'crimson-chat',
-    name: 'Crimson Chat', 
-    description: 'Hot discussions',
-    color: 'from-red-500 to-pink-500',
-    icon: '❤️'
-  },
-  {
-    id: 'cyber-space',
-    name: 'Cyber Space',
-    description: 'Future vibes',
-    color: 'from-cyan-500 to-blue-500', 
+    id: 'tech-talk',
+    name: 'Tech Talk', 
+    description: 'Technology discussions',
+    color: 'bg-purple-600',
     icon: '🚀'
+  },
+  {
+    id: 'lounge',
+    name: 'Lounge',
+    description: 'Casual conversations',
+    color: 'bg-blue-600', 
+    icon: '🛋️'
   }
 ];
 
@@ -97,7 +96,7 @@ const Messages = () => {
     setSearchQuery('');
   };
 
-  // Mobile layout when chat is selected
+  // Mobile chat view
   if (selectedUserId) {
     return (
       <ChatWindow 
@@ -107,24 +106,23 @@ const Messages = () => {
     );
   }
 
-  // Main messages page
   return (
     <div className="min-h-screen bg-background">
       <Header />
       
-      <div className="max-w-4xl mx-auto p-4">
-        <div className="modern-card p-6 mb-6">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="text-2xl font-bold text-white">Messages</h1>
-            <Button className="btn-primary">
+      <div className="container mx-auto p-4 max-w-4xl">
+        {/* Header */}
+        <div className="modern-card p-4 mb-4">
+          <div className="flex items-center justify-between mb-4">
+            <h1 className="text-xl font-bold text-white">Messages</h1>
+            <Button className="btn-primary text-sm">
               <MessageSquare className="h-4 w-4 mr-2" />
               New Chat
             </Button>
           </div>
           
           {/* Search */}
-          <div className="relative mb-6">
+          <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
             <Input
               placeholder="Search users..."
@@ -138,7 +136,7 @@ const Messages = () => {
         {/* Content */}
         {showUsersList ? (
           /* Search Results */
-          <div className="modern-card p-6">
+          <div className="modern-card p-4">
             <h2 className="text-lg font-semibold mb-4 text-white">Search Results</h2>
             {filteredUsers.length === 0 ? (
               <div className="text-center py-8">
@@ -155,7 +153,7 @@ const Messages = () => {
                   >
                     <Avatar className="h-12 w-12">
                       <AvatarImage src={u.avatar_url || ''} />
-                      <AvatarFallback className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white">
+                      <AvatarFallback className="bg-indigo-600 text-white">
                         {u.username.charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
@@ -181,41 +179,37 @@ const Messages = () => {
             )}
           </div>
         ) : (
-          <div className="space-y-6">
-            {/* Color Rooms */}
-            <div className="modern-card p-6">
+          <div className="space-y-4">
+            {/* Chat Rooms */}
+            <div className="modern-card p-4">
               <h2 className="text-lg font-semibold mb-4 text-white flex items-center gap-2">
-                <Hash className="h-5 w-5 text-indigo-400" />
-                Color Rooms
+                <Hash className="h-5 w-5 text-indigo-500" />
+                Chat Rooms
               </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 gap-3">
                 {colorRooms.map((room) => (
                   <div
                     key={room.id}
                     onClick={() => startChat(room.id)}
-                    className="p-4 rounded-lg cursor-pointer transition-all hover:scale-105 bg-gradient-to-r hover:shadow-lg"
-                    style={{
-                      background: `linear-gradient(135deg, rgb(99 102 241 / 0.1), rgb(147 51 234 / 0.1))`,
-                      border: '1px solid rgb(99 102 241 / 0.2)'
-                    }}
+                    className={`p-4 rounded-lg cursor-pointer transition-all hover:opacity-80 ${room.color}`}
                   >
                     <div className="flex items-center gap-3 mb-2">
                       <span className="text-2xl">{room.icon}</span>
                       <h3 className="font-semibold text-white">{room.name}</h3>
                     </div>
-                    <p className="text-sm text-gray-400">{room.description}</p>
+                    <p className="text-sm text-white/80">{room.description}</p>
                   </div>
                 ))}
               </div>
             </div>
 
             {/* AI Assistant */}
-            <div className="modern-card p-6">
+            <div className="modern-card p-4">
               <div 
                 onClick={() => startChat('ai-assistant')}
                 className="flex items-center gap-3 p-4 hover:bg-white/5 rounded-lg cursor-pointer transition-colors"
               >
-                <div className="w-12 h-12 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center">
+                <div className="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center">
                   <Bot className="h-6 w-6 text-white" />
                 </div>
                 <div className="flex-1">
@@ -228,12 +222,9 @@ const Messages = () => {
               </div>
             </div>
 
-            {/* Recent Conversations */}
-            <ConversationsList onSelectConversation={setSelectedUserId} />
-
             {/* Suggested People */}
             {!loading && allUsers.length > 0 && (
-              <div className="modern-card p-6">
+              <div className="modern-card p-4">
                 <h2 className="text-lg font-semibold mb-4 text-white">Suggested People</h2>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                   {allUsers.slice(0, 8).map((u) => (
@@ -244,14 +235,11 @@ const Messages = () => {
                     >
                       <Avatar className="h-12 w-12 mx-auto mb-2">
                         <AvatarImage src={u.avatar_url || ''} />
-                        <AvatarFallback className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white">
+                        <AvatarFallback className="bg-indigo-600 text-white">
                           {u.username.charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                       <p className="text-sm font-medium text-white truncate">{u.username}</p>
-                      {u.is_verified && (
-                        <div className="w-3 h-3 bg-blue-500 rounded-full mx-auto mt-1" />
-                      )}
                     </div>
                   ))}
                 </div>
@@ -261,8 +249,8 @@ const Messages = () => {
         )}
       </div>
       
-      {/* Mobile padding */}
-      <div className="h-20 md:h-0"></div>
+      {/* Mobile padding for navigation */}
+      <div className="h-4 md:h-0"></div>
     </div>
   );
 };

@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -51,20 +50,28 @@ const ChatWindow = ({ userId, onBack }: ChatWindowProps) => {
   }, []);
 
   useEffect(() => {
-    if (userId === 'ai-assistant') {
+    if (userId === 'ai-assistant' || userId.includes('chat') || userId === 'general-chat' || userId === 'tech-talk' || userId === 'lounge') {
       setIsAI(true);
       setOtherUser({
-        id: 'ai-assistant',
-        username: 'Plazoid AI',
+        id: userId,
+        username: userId === 'ai-assistant' ? 'Plazoid AI' : userId.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase()),
         avatar_url: null,
-        full_name: 'AI Assistant',
+        full_name: userId === 'ai-assistant' ? 'AI Assistant' : 'Chat Room',
         is_verified: true
       });
+      
+      const welcomeMessages = {
+        'ai-assistant': "Welcome to Plazoid! I'm your AI assistant. How can I help you today?",
+        'general-chat': "Welcome to General Chat! Feel free to discuss anything here.",
+        'tech-talk': "Welcome to Tech Talk! Share your thoughts on technology and innovation.",
+        'lounge': "Welcome to the Lounge! Relax and have casual conversations."
+      };
+      
       setMessages([
         {
           id: '1',
-          content: "Welcome to Plazoid! I'm your AI assistant. How can I help you today?",
-          sender_id: 'ai-assistant',
+          content: welcomeMessages[userId as keyof typeof welcomeMessages] || "Welcome! Start chatting.",
+          sender_id: userId,
           created_at: new Date().toISOString()
         }
       ]);
@@ -98,7 +105,6 @@ const ChatWindow = ({ userId, onBack }: ChatWindowProps) => {
     const channel = supabase.channel(channelName);
     channelRef.current = channel;
 
-    // Listen for new messages
     channel.on(
       'postgres_changes',
       {
@@ -119,7 +125,6 @@ const ChatWindow = ({ userId, onBack }: ChatWindowProps) => {
       }
     );
 
-    // Listen for typing indicators
     channel.on('broadcast', { event: 'typing' }, ({ payload }) => {
       if (payload.user_id !== currentUser.id) {
         setOtherUserTyping(payload.typing);
@@ -190,7 +195,6 @@ const ChatWindow = ({ userId, onBack }: ChatWindowProps) => {
     sendTypingIndicator(false);
 
     if (isAI) {
-      // Add user message immediately
       const userMsg: Message = {
         id: `user-${Date.now()}`,
         content: messageContent,
@@ -199,13 +203,12 @@ const ChatWindow = ({ userId, onBack }: ChatWindowProps) => {
       };
       setMessages(prev => [...prev, userMsg]);
 
-      // Simulate AI typing
       setOtherUserTyping(true);
       setTimeout(() => {
         const aiResponse: Message = {
           id: `ai-${Date.now()}`,
           content: generateAIResponse(messageContent),
-          sender_id: 'ai-assistant',
+          sender_id: userId,
           created_at: new Date().toISOString()
         };
         setMessages(prev => [...prev, aiResponse]);
@@ -215,7 +218,6 @@ const ChatWindow = ({ userId, onBack }: ChatWindowProps) => {
       return;
     }
 
-    // Add optimistic message
     const tempId = `temp-${Date.now()}`;
     const tempMessage: Message = {
       id: tempId,
@@ -238,14 +240,12 @@ const ChatWindow = ({ userId, onBack }: ChatWindowProps) => {
 
       if (error) throw error;
 
-      // Replace temp message with real one
       setMessages(prev => 
         prev.map(msg => msg.id === tempId ? data : msg)
       );
     } catch (error) {
       console.error('Error sending message:', error);
       toast.error('Failed to send message');
-      // Remove temp message on error
       setMessages(prev => prev.filter(msg => msg.id !== tempId));
     } finally {
       setSending(false);

@@ -2,7 +2,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Send, Smile } from 'lucide-react';
+import { Send } from 'lucide-react';
 
 interface MessageInputProps {
   onSendMessage: (message: string) => Promise<void>;
@@ -17,7 +17,7 @@ const MessageInput = ({ onSendMessage, onSendReaction, onTyping, sending }: Mess
   const inputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const reactions = ['😊', '❤️', '👍', '😂', '😢', '😮'];
+  const reactions = ['😊', '👍', '❤️', '😂', '😮', '🔥'];
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -86,14 +86,14 @@ const MessageInput = ({ onSendMessage, onSendReaction, onTyping, sending }: Mess
   return (
     <div className="flex flex-col gap-3">
       {/* Quick Reactions */}
-      <div className="flex gap-2 justify-center">
+      <div className="flex gap-2 justify-center overflow-x-auto pb-2">
         {reactions.map((emoji) => (
           <Button
             key={emoji}
             variant="ghost"
             type="button"
             onClick={() => onSendReaction(emoji)}
-            className="text-lg hover:scale-110 transition-transform p-2 h-auto rounded-full hover:bg-white/10"
+            className="text-lg hover:scale-110 transition-transform p-2 h-auto rounded-full hover:bg-white/10 flex-shrink-0"
             disabled={sending}
           >
             {emoji}
@@ -120,7 +120,7 @@ const MessageInput = ({ onSendMessage, onSendReaction, onTyping, sending }: Mess
         <Button
           type="submit"
           disabled={sending || !newMessage.trim()}
-          className="btn-primary rounded-full p-3 aspect-square"
+          className="btn-primary rounded-full p-3 aspect-square flex-shrink-0"
         >
           {sending ? (
             <div className="loading-spinner w-4 h-4" />
