@@ -78,40 +78,40 @@ const Settings = () => {
       <Header />
       
       <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border-0">
+        <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-gray-100">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Settings</h1>
           <p className="text-gray-600">Customize your Plazoid experience</p>
         </div>
 
         <Tabs defaultValue="profile" className="w-full">
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border-0 mb-6">
-            <TabsList className="grid w-full grid-cols-5 bg-orange-50 h-12">
-              <TabsTrigger value="profile" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-orange-600 data-[state=active]:text-white font-medium rounded-lg">
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-gray-100 mb-6">
+            <TabsList className="grid w-full grid-cols-5 bg-orange-50 h-12 tabs-list">
+              <TabsTrigger value="profile" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-orange-600 data-[state=active]:text-white font-medium rounded-lg text-gray-700 tabs-trigger">
                 <User className="h-4 w-4 mr-2" />
                 Profile
               </TabsTrigger>
-              <TabsTrigger value="notifications" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-orange-600 data-[state=active]:text-white font-medium rounded-lg">
+              <TabsTrigger value="notifications" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-orange-600 data-[state=active]:text-white font-medium rounded-lg text-gray-700 tabs-trigger">
                 <Bell className="h-4 w-4 mr-2" />
                 Notifications
               </TabsTrigger>
-              <TabsTrigger value="privacy" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-orange-600 data-[state=active]:text-white font-medium rounded-lg">
+              <TabsTrigger value="privacy" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-orange-600 data-[state=active]:text-white font-medium rounded-lg text-gray-700 tabs-trigger">
                 <Shield className="h-4 w-4 mr-2" />
                 Privacy
               </TabsTrigger>
-              <TabsTrigger value="appearance" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-orange-600 data-[state=active]:text-white font-medium rounded-lg">
+              <TabsTrigger value="appearance" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-orange-600 data-[state=active]:text-white font-medium rounded-lg text-gray-700 tabs-trigger">
                 <Palette className="h-4 w-4 mr-2" />
-                Appearance
+                Theme
               </TabsTrigger>
-              <TabsTrigger value="gamification" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-orange-600 data-[state=active]:text-white font-medium rounded-lg">
+              <TabsTrigger value="gamification" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-orange-600 data-[state=active]:text-white font-medium rounded-lg text-gray-700 tabs-trigger">
                 <Star className="h-4 w-4 mr-2" />
-                Achievements
+                Rewards
               </TabsTrigger>
             </TabsList>
           </div>
 
           <TabsContent value="profile">
             <div className="space-y-6">
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border-0">
+              <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-gray-100">
                 <div className="flex items-center gap-2 mb-6">
                   <User className="h-5 w-5 text-orange-500" />
                   <h2 className="text-xl font-semibold text-gray-900">Profile Information</h2>
@@ -153,7 +153,7 @@ const Settings = () => {
           </TabsContent>
 
           <TabsContent value="notifications">
-            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border-0">
+            <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-gray-100">
               <div className="flex items-center gap-2 mb-6">
                 <Bell className="h-5 w-5 text-orange-500" />
                 <h2 className="text-xl font-semibold text-gray-900">Notification Preferences</h2>
@@ -184,7 +184,7 @@ const Settings = () => {
           </TabsContent>
 
           <TabsContent value="privacy">
-            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border-0">
+            <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-gray-100">
               <div className="flex items-center gap-2 mb-6">
                 <Shield className="h-5 w-5 text-orange-500" />
                 <h2 className="text-xl font-semibold text-gray-900">Privacy & Security</h2>
@@ -214,7 +214,7 @@ const Settings = () => {
           </TabsContent>
 
           <TabsContent value="appearance">
-            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border-0">
+            <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-gray-100">
               <div className="flex items-center gap-2 mb-6">
                 <Palette className="h-5 w-5 text-orange-500" />
                 <h2 className="text-xl font-semibold text-gray-900">Appearance & Theme</h2>
@@ -259,7 +259,7 @@ const Settings = () => {
 
           <TabsContent value="gamification">
             <div className="space-y-6">
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border-0">
+              <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-gray-100">
                 <div className="flex items-center gap-2 mb-6">
                   <Zap className="h-5 w-5 text-orange-500" />
                   <h2 className="text-xl font-semibold text-gray-900">Level & Progress</h2>
@@ -290,7 +290,7 @@ const Settings = () => {
                 </div>
               </div>
 
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border-0">
+              <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-gray-100">
                 <div className="flex items-center gap-2 mb-6">
                   <Star className="h-5 w-5 text-orange-500" />
                   <h2 className="text-xl font-semibold text-gray-900">Achievements</h2>

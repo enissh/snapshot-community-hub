@@ -16,7 +16,7 @@ const Profile = () => {
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-white">
         <Header />
         <div className="flex items-center justify-center py-20">
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-xl border-0 text-center max-w-md mx-4">
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-gray-100 text-center max-w-md mx-4">
             <div className="w-16 h-16 bg-gradient-to-r from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
               <span className="text-2xl">🚫</span>
             </div>

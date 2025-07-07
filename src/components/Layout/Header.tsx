@@ -38,7 +38,7 @@ const Header = () => {
   return (
     <>
       {/* Mobile Header */}
-      <header className="bg-white/95 backdrop-blur-md sticky top-0 z-40 border-b border-gray-200 md:hidden shadow-sm">
+      <header className="bg-white/98 backdrop-blur-md sticky top-0 z-40 border-b border-gray-200 md:hidden shadow-sm">
         <div className="flex items-center justify-between h-16 px-4">
           {/* Logo */}
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => handleNavigation('/')}>
@@ -60,7 +60,7 @@ const Header = () => {
       </header>
 
       {/* Desktop Header */}
-      <header className="bg-white/95 backdrop-blur-md sticky top-0 z-40 border-b border-gray-200 hidden md:block shadow-sm">
+      <header className="bg-white/98 backdrop-blur-md sticky top-0 z-40 border-b border-gray-200 hidden md:block shadow-sm">
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
@@ -70,19 +70,19 @@ const Header = () => {
 
           {/* Navigation Icons */}
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/')} className="hover:bg-orange-50 rounded-full text-gray-600 hover:text-orange-600">
+            <Button variant="ghost" size="icon" onClick={() => navigate('/')} className="hover:bg-orange-50 rounded-full text-gray-700 hover:text-orange-600">
               <Home className="h-5 w-5" />
             </Button>
             
-            <Button variant="ghost" size="icon" onClick={() => navigate('/search')} className="hover:bg-orange-50 rounded-full text-gray-600 hover:text-orange-600">
+            <Button variant="ghost" size="icon" onClick={() => navigate('/search')} className="hover:bg-orange-50 rounded-full text-gray-700 hover:text-orange-600">
               <Search className="h-5 w-5" />
             </Button>
 
-            <Button variant="ghost" size="icon" onClick={() => navigate('/explore')} className="hover:bg-orange-50 rounded-full text-gray-600 hover:text-orange-600">
+            <Button variant="ghost" size="icon" onClick={() => navigate('/explore')} className="hover:bg-orange-50 rounded-full text-gray-700 hover:text-orange-600">
               <Globe className="h-5 w-5" />
             </Button>
             
-            <Button variant="ghost" size="icon" onClick={() => navigate('/messages')} className="hover:bg-orange-50 relative rounded-full text-gray-600 hover:text-orange-600">
+            <Button variant="ghost" size="icon" onClick={() => navigate('/messages')} className="hover:bg-orange-50 relative rounded-full text-gray-700 hover:text-orange-600">
               <MessageCircle className="h-5 w-5" />
               <div className="absolute -top-1 -right-1 w-2 h-2 bg-orange-500 rounded-full" />
             </Button>
@@ -96,7 +96,7 @@ const Header = () => {
               </Avatar>
             </Button>
 
-            <Button variant="ghost" size="icon" onClick={() => navigate('/settings')} className="hover:bg-orange-50 rounded-full text-gray-600 hover:text-orange-600">
+            <Button variant="ghost" size="icon" onClick={() => navigate('/settings')} className="hover:bg-orange-50 rounded-full text-gray-700 hover:text-orange-600">
               <Settings className="h-5 w-5" />
             </Button>
 

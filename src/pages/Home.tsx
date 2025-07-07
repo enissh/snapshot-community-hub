@@ -16,12 +16,12 @@ const Home = () => {
       
       <main className="max-w-2xl mx-auto px-4 py-6 space-y-6">
         {/* Stories Bar */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-xl border-0">
+        <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-4 shadow-xl border border-gray-100">
           <StoriesBar />
         </div>
 
         {/* Create Post Card */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border-0">
+        <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-gray-100">
           <div className="flex items-center gap-4 mb-4">
             <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full flex items-center justify-center">
               <Plus className="h-6 w-6 text-white" />
@@ -37,33 +37,33 @@ const Home = () => {
         </div>
 
         {/* Feed Filter Tabs */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border-0">
+        <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-gray-100">
           <Tabs value={feedFilter} onValueChange={setFeedFilter} className="w-full">
-            <TabsList className="grid w-full grid-cols-4 bg-orange-50 h-12">
+            <TabsList className="grid w-full grid-cols-4 bg-orange-50 h-12 tabs-list">
               <TabsTrigger 
                 value="all" 
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-orange-600 data-[state=active]:text-white font-medium rounded-lg"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-orange-600 data-[state=active]:text-white font-medium rounded-lg text-gray-700 tabs-trigger"
               >
                 <Filter className="h-4 w-4 mr-2" />
                 All
               </TabsTrigger>
               <TabsTrigger 
                 value="photos" 
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-orange-600 data-[state=active]:text-white font-medium rounded-lg"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-orange-600 data-[state=active]:text-white font-medium rounded-lg text-gray-700 tabs-trigger"
               >
                 <Image className="h-4 w-4 mr-2" />
                 Photos
               </TabsTrigger>
               <TabsTrigger 
                 value="videos" 
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-orange-600 data-[state=active]:text-white font-medium rounded-lg"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-orange-600 data-[state=active]:text-white font-medium rounded-lg text-gray-700 tabs-trigger"
               >
                 <Video className="h-4 w-4 mr-2" />
                 Videos
               </TabsTrigger>
               <TabsTrigger 
                 value="friends" 
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-orange-600 data-[state=active]:text-white font-medium rounded-lg"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-orange-600 data-[state=active]:text-white font-medium rounded-lg text-gray-700 tabs-trigger"
               >
                 <Users className="h-4 w-4 mr-2" />
                 Friends
@@ -73,7 +73,7 @@ const Home = () => {
         </div>
 
         {/* Main Feed */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border-0">
+        <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-gray-100">
           <Feed filter={feedFilter} />
         </div>
 
