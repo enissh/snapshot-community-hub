@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Camera, Crown, Sparkles } from 'lucide-react';
+import { Zap, Eye, EyeOff, Mail, Lock, User, UserPlus } from 'lucide-react';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -14,6 +14,7 @@ const Auth = () => {
   const [username, setUsername] = useState('');
   const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { signIn, signUp } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -26,7 +27,7 @@ const Auth = () => {
         if (error) {
           toast.error(error.message);
         } else {
-          toast.success('Welcome back to PlazaGram! 🎉');
+          toast.success('Welcome back to Plazoid! 🎉');
         }
       } else {
         if (!username.trim()) {
@@ -38,7 +39,7 @@ const Auth = () => {
         if (error) {
           toast.error(error.message);
         } else {
-          toast.success('Welcome to PlazaGram! Please check your email to verify your account. 📧');
+          toast.success('Welcome to Plazoid! Please check your email to verify your account. 📧');
         }
       }
     } catch (error) {
@@ -49,82 +50,114 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4 feed-grid">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-white flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <div className="text-center mb-8 animate-fade-in">
+        {/* Logo and Branding */}
+        <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-6">
             <div className="relative">
-              <Camera className="h-16 w-16 text-primary animate-pulse-orange" />
-              <Crown className="h-6 w-6 text-accent absolute -top-2 -right-2" />
+              <div className="w-16 h-16 bg-gradient-to-r from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg">
+                <Zap className="h-8 w-8 text-white" />
+              </div>
             </div>
           </div>
-          <h1 className="text-5xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-2">
-            PlazaGram
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">
+            Plazoid
           </h1>
-          <p className="text-foreground/80 text-lg flex items-center justify-center gap-2">
-            <Sparkles className="h-4 w-4 text-accent" />
-            The Future of Visual Sharing
-            <Sparkles className="h-4 w-4 text-accent" />
+          <p className="text-gray-600 text-lg">
+            Connect, Share, Experience
           </p>
-          <p className="text-muted-foreground mt-2">Built with love by AI</p>
         </div>
 
-        <Card className="plaza-card animate-slide-up">
-          <CardHeader>
-            <CardTitle className="text-center text-2xl font-bold text-foreground">
-              {isLogin ? 'Welcome Back' : 'Join PlazaGram'}
+        {/* Auth Card */}
+        <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl">
+          <CardHeader className="text-center pb-2">
+            <CardTitle className="text-2xl font-bold text-gray-900">
+              {isLogin ? 'Welcome Back' : 'Join Plazoid'}
             </CardTitle>
+            <p className="text-gray-600 text-sm mt-1">
+              {isLogin ? 'Sign in to your account' : 'Create your new account'}
+            </p>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-4">
             <form onSubmit={handleSubmit} className="space-y-4">
               {!isLogin && (
                 <>
-                  <Input
-                    type="text"
-                    placeholder="Username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    required={!isLogin}
-                    className="bg-secondary/50 border-primary/20 text-foreground text-large"
-                  />
-                  <Input
-                    type="text"
-                    placeholder="Full Name"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    className="bg-secondary/50 border-primary/20 text-foreground text-large"
-                  />
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                    <Input
+                      type="text"
+                      placeholder="Username"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      required={!isLogin}
+                      className="pl-10 h-12 border-gray-200 focus:border-orange-500 focus:ring-orange-500 bg-white"
+                    />
+                  </div>
+                  <div className="relative">
+                    <UserPlus className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                    <Input
+                      type="text"
+                      placeholder="Full Name (optional)"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      className="pl-10 h-12 border-gray-200 focus:border-orange-500 focus:ring-orange-500 bg-white"
+                    />
+                  </div>
                 </>
               )}
-              <Input
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="bg-secondary/50 border-primary/20 text-foreground text-large"
-              />
-              <Input
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="bg-secondary/50 border-primary/20 text-foreground text-large"
-              />
+              
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                <Input
+                  type="email"
+                  placeholder="Email address"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="pl-10 h-12 border-gray-200 focus:border-orange-500 focus:ring-orange-500 bg-white"
+                />
+              </div>
+              
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="pl-10 pr-10 h-12 border-gray-200 focus:border-orange-500 focus:ring-orange-500 bg-white"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                </button>
+              </div>
+              
               <Button 
                 type="submit" 
-                className="w-full orange-button text-large"
+                className="w-full h-12 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
                 disabled={loading}
               >
-                {loading ? 'Please wait...' : (isLogin ? 'Sign In' : 'Create Account')}
+                {loading ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Please wait...
+                  </div>
+                ) : (
+                  isLogin ? 'Sign In' : 'Create Account'
+                )}
               </Button>
             </form>
 
             <div className="mt-6 text-center">
               <button
                 onClick={() => setIsLogin(!isLogin)}
-                className="text-primary hover:text-accent font-medium text-large transition-colors"
+                className="text-orange-600 hover:text-orange-700 font-medium transition-colors duration-200"
               >
                 {isLogin ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
               </button>
@@ -132,11 +165,9 @@ const Auth = () => {
           </CardContent>
         </Card>
 
-        <div className="text-center mt-6 text-muted-foreground text-sm">
-          <p>Made by <span className="font-semibold text-primary">Enis Shabani (King Mbreti)</span> 👑</p>
-          <p className="mt-2">
-            <a href="/about" className="text-accent hover:text-primary transition-colors">About PlazaGram</a>
-          </p>
+        {/* Footer */}
+        <div className="text-center mt-8 text-gray-600 text-sm">
+          <p>Built with ❤️ using Lovable</p>
         </div>
       </div>
     </div>
