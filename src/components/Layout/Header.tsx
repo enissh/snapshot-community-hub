@@ -12,7 +12,8 @@ import {
   Settings,
   Search,
   Zap,
-  X
+  X,
+  Globe
 } from 'lucide-react';
 
 const Header = () => {
@@ -75,6 +76,10 @@ const Header = () => {
             
             <Button variant="ghost" size="icon" onClick={() => navigate('/search')} className="hover:bg-orange-50 rounded-full text-gray-600 hover:text-orange-600">
               <Search className="h-5 w-5" />
+            </Button>
+
+            <Button variant="ghost" size="icon" onClick={() => navigate('/explore')} className="hover:bg-orange-50 rounded-full text-gray-600 hover:text-orange-600">
+              <Globe className="h-5 w-5" />
             </Button>
             
             <Button variant="ghost" size="icon" onClick={() => navigate('/messages')} className="hover:bg-orange-50 relative rounded-full text-gray-600 hover:text-orange-600">
@@ -154,6 +159,15 @@ const Header = () => {
               >
                 <Search className="h-5 w-5 mr-3" />
                 Search
+              </Button>
+
+              <Button
+                variant="ghost"
+                className="w-full justify-start text-left hover:bg-orange-50 text-gray-700 hover:text-orange-600"
+                onClick={() => handleNavigation('/explore')}
+              >
+                <Globe className="h-5 w-5 mr-3" />
+                Explore
               </Button>
               
               <Button

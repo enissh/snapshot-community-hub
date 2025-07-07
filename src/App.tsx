@@ -114,13 +114,13 @@ const AppContent = () => {
         } />
         <Route path="/about" element={<About />} />
         <Route path="/easter-egg" element={
-          <div className="min-h-screen cyber-grid flex items-center justify-center">
-            <div className="cyber-card p-8 text-center max-w-md">
+          <div className="min-h-screen bg-gradient-to-br from-orange-50 to-white flex items-center justify-center">
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-xl border-0 text-center max-w-md">
               <h1 className="text-3xl mb-4">🔥 Easter Egg Found! 🔥</h1>
-              <p className="text-cyber mb-4">Only real ones find this.</p>
-              <p className="text-hologram text-xl font-bold">Respect from King Mbreti 👑</p>
-              <div className="mt-6 p-4 hologram rounded-lg">
-                <p className="text-sm">You've unlocked the hidden realm of PlazaGram!</p>
+              <p className="text-orange-600 mb-4">Only real ones find this.</p>
+              <p className="text-orange-500 text-xl font-bold">Respect from King Mbreti 👑</p>
+              <div className="mt-6 p-4 bg-gradient-to-r from-orange-100 to-orange-50 rounded-lg">
+                <p className="text-sm text-gray-700">You've unlocked the hidden realm of Plazoid!</p>
               </div>
             </div>
           </div>
