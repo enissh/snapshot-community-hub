@@ -26,13 +26,13 @@ interface MessageBubbleProps {
 
 const MessageBubble = ({ message, isMine, otherUser, currentUser }: MessageBubbleProps) => {
   return (
-    <div className={`flex items-end gap-2 ${isMine ? 'justify-end' : 'justify-start'} mb-3`}>
+    <div className={`flex items-end gap-3 ${isMine ? 'justify-end' : 'justify-start'} mb-4`}>
       {!isMine && otherUser && (
         <Avatar className="h-8 w-8 flex-shrink-0">
           {otherUser.avatar_url ? (
             <AvatarImage src={otherUser.avatar_url} alt={otherUser.username} />
           ) : (
-            <AvatarFallback className="bg-indigo-600 text-white text-xs">
+            <AvatarFallback className="bg-gradient-to-r from-orange-500 to-orange-600 text-white text-xs font-semibold">
               {otherUser.username[0]?.toUpperCase() || '?'}
             </AvatarFallback>
           )}
@@ -47,8 +47,8 @@ const MessageBubble = ({ message, isMine, otherUser, currentUser }: MessageBubbl
             className="rounded-lg mb-2 max-h-48 w-auto object-cover"
           />
         )}
-        <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
-        <span className={`text-xs opacity-70 block mt-1 ${isMine ? 'text-right' : 'text-left'}`}>
+        <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">{message.content}</p>
+        <span className={`text-xs opacity-70 block mt-2 ${isMine ? 'text-right' : 'text-left'}`}>
           {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
         </span>
       </div>
@@ -58,7 +58,7 @@ const MessageBubble = ({ message, isMine, otherUser, currentUser }: MessageBubbl
           {currentUser?.user_metadata?.avatar_url ? (
             <AvatarImage src={currentUser.user_metadata.avatar_url} alt="You" />
           ) : (
-            <AvatarFallback className="bg-indigo-600 text-white text-xs">
+            <AvatarFallback className="bg-gradient-to-r from-orange-500 to-orange-600 text-white text-xs font-semibold">
               {currentUser?.email?.[0]?.toUpperCase() || 'Y'}
             </AvatarFallback>
           )}

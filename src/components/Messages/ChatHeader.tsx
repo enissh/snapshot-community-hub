@@ -25,7 +25,7 @@ const ChatHeader = ({ otherUser, onBack, typing }: ChatHeaderProps) => {
           variant="ghost"
           size="icon"
           onClick={onBack}
-          className="text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+          className="text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-xl"
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
@@ -41,7 +41,7 @@ const ChatHeader = ({ otherUser, onBack, typing }: ChatHeaderProps) => {
           variant="ghost"
           size="icon"
           onClick={onBack}
-          className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 flex-shrink-0"
+          className="text-gray-600 hover:text-orange-600 hover:bg-orange-50 flex-shrink-0 rounded-xl"
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
@@ -50,7 +50,7 @@ const ChatHeader = ({ otherUser, onBack, typing }: ChatHeaderProps) => {
           {otherUser.avatar_url ? (
             <AvatarImage src={otherUser.avatar_url} alt={otherUser.username} />
           ) : (
-            <AvatarFallback className="bg-orange-500 text-white">
+            <AvatarFallback className="bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold">
               {otherUser.username[0]?.toUpperCase() || '?'}
             </AvatarFallback>
           )}
@@ -60,19 +60,27 @@ const ChatHeader = ({ otherUser, onBack, typing }: ChatHeaderProps) => {
           <div className="flex items-center gap-2">
             <h3 className="font-semibold truncate text-gray-900">{otherUser.username}</h3>
             {otherUser.is_verified && (
-              <div className="w-4 h-4 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
+              <div className="w-4 h-4 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full flex items-center justify-center flex-shrink-0">
                 <span className="text-white text-xs">✓</span>
               </div>
             )}
           </div>
           <p className="text-xs text-gray-500 truncate">
-            {typing ? 'typing...' : 'online'}
+            {typing ? (
+              <span className="text-orange-600 font-medium">typing...</span>
+            ) : (
+              'online'
+            )}
           </p>
         </div>
       </div>
       
       <div className="flex items-center gap-1 flex-shrink-0">
-        <Button variant="ghost" size="icon" className="text-gray-600 hover:text-gray-900 hover:bg-gray-100">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-xl"
+        >
           <MoreVertical className="h-4 w-4" />
         </Button>
       </div>

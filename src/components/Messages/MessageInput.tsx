@@ -84,7 +84,7 @@ const MessageInput = ({ onSendMessage, onSendReaction, onTyping, sending }: Mess
   }, []);
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-4">
       {/* Quick Reactions */}
       <div className="flex gap-2 justify-center overflow-x-auto pb-2">
         {reactions.map((emoji) => (
@@ -93,7 +93,7 @@ const MessageInput = ({ onSendMessage, onSendReaction, onTyping, sending }: Mess
             variant="ghost"
             type="button"
             onClick={() => onSendReaction(emoji)}
-            className="text-lg hover:scale-110 transition-transform p-2 h-auto rounded-full hover:bg-orange-50 flex-shrink-0"
+            className="text-lg hover:scale-110 transition-transform p-3 h-auto rounded-full hover:bg-orange-50 flex-shrink-0 border border-gray-200 hover:border-orange-300"
             disabled={sending}
           >
             {emoji}
@@ -112,7 +112,7 @@ const MessageInput = ({ onSendMessage, onSendReaction, onTyping, sending }: Mess
             onChange={handleInputChange}
             onKeyPress={handleKeyPress}
             disabled={sending}
-            className="modern-input pr-4"
+            className="h-12 bg-white border-2 border-gray-200 focus:border-orange-500 focus:ring-orange-500 rounded-xl text-base px-4"
             autoComplete="off"
           />
         </div>
@@ -120,12 +120,12 @@ const MessageInput = ({ onSendMessage, onSendReaction, onTyping, sending }: Mess
         <Button
           type="submit"
           disabled={sending || !newMessage.trim()}
-          className="btn-primary rounded-full p-3 aspect-square flex-shrink-0"
+          className="h-12 w-12 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex-shrink-0"
         >
           {sending ? (
             <div className="loading-spinner w-4 h-4" />
           ) : (
-            <Send className="h-4 w-4" />
+            <Send className="h-5 w-5" />
           )}
         </Button>
       </form>
